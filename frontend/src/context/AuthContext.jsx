@@ -13,6 +13,7 @@ export function AuthProvider({ children }) {
     getMe()
       .then((r) => setUser(r.data))
       .catch(() => {
+        // Token invalid or backend unreachable — clear and continue as guest
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
       })
