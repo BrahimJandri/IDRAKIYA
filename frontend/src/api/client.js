@@ -23,7 +23,14 @@ const processQueue = (error, token = null) => {
 }
 
 api.interceptors.response.use(
-  (r) => r,
+  (r) => {
+    // If Vercel/server returns HTML instead of JSON, treat as backend-unavailable error
+    const ct = r.headers?.['content-type'] || ''
+    if (ct.includes('text/html')) {
+      return Promise.reject(new Error('Backend not reachable'))
+    }
+    return r
+  },
   async (error) => {
     const original = error.config
     if (error.response?.status !== 401 || original._retry) {
@@ -55,7 +62,10 @@ api.interceptors.response.use(
       processQueue(err, null)
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
-      window.location.href = '/login'
+      // Only redirect if not already on an auth page
+      if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+        window.location.href = '/login'
+      }
       return Promise.reject(err)
     } finally {
       isRefreshing = false
