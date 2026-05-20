@@ -107,6 +107,10 @@ db-down:
 .PHONY: migrate
 migrate:
 	@echo "  Running migrations…"
+	@if [ -z "$$(ls alembic/versions/*.py 2>/dev/null)" ]; then \
+		echo "  No migration files found — generating initial schema…"; \
+		$(VENV)/alembic revision --autogenerate -m "initial schema"; \
+	fi
 	@$(VENV)/alembic upgrade head
 	@echo "  Migrations applied."
 

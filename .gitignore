@@ -1,0 +1,38 @@
+# ── Environment ───────────────────────────────────────────────────────────────
+.env
+*.env.local
+
+# ── Python ────────────────────────────────────────────────────────────────────
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+*.so
+
+# ── Alembic ───────────────────────────────────────────────────────────────────
+# Keep versions tracked, ignore only local editor artefacts
+alembic/versions/*.pyc
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ── Media uploads ─────────────────────────────────────────────────────────────
+media/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+.docker/
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

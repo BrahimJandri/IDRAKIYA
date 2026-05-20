@@ -16,7 +16,7 @@ export default function StudentDashboard() {
   const [profileForm, setProfileForm] = useState({ full_name: user?.full_name || '', bio: user?.bio || '' })
   const [pwdForm, setPwdForm] = useState({ current_password: '', new_password: '' })
   const [msg, setMsg] = useState('')
-  const [error, setError] = useState('')
+  const [err, setErr] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -26,189 +26,239 @@ export default function StudentDashboard() {
     ]).finally(() => setLoading(false))
   }, [])
 
-  const handleRevokeSession = async (id) => {
-    await revokeSession(id)
+  const flash = (m, isErr = false) => {
+    isErr ? setErr(m) : setMsg(m)
+    setTimeout(() => { setMsg(''); setErr('') }, 4000)
+  }
+
+  const handleRevoke = async (id) => {
+    await revokeSession(id).catch(() => {})
     setSessions((s) => s.filter((x) => x.id !== id))
   }
-
   const handleLogoutAll = async () => {
-    await logoutAll()
-    logout()
-    navigate('/login')
+    await logoutAll().catch(() => {})
+    logout(); navigate('/login')
   }
-
   const handleProfile = async (e) => {
-    e.preventDefault(); setMsg(''); setError('')
-    try {
-      await updateMe(profileForm)
-      setMsg('Profile updated successfully')
-    } catch (e) { setError(e.response?.data?.detail || 'Update failed') }
+    e.preventDefault()
+    try { await updateMe(profileForm); flash('Profile updated') }
+    catch (e) { flash(e.response?.data?.detail || 'Update failed', true) }
   }
-
   const handlePwd = async (e) => {
-    e.preventDefault(); setMsg(''); setError('')
+    e.preventDefault()
     try {
       await changePassword(pwdForm)
-      setMsg('Password changed — please log in again')
+      flash('Password changed — signing out…')
       setTimeout(() => { logout(); navigate('/login') }, 2000)
-    } catch (e) { setError(e.response?.data?.detail || 'Change failed') }
+    } catch (e) { flash(e.response?.data?.detail || 'Change failed', true) }
   }
 
-  const completed = enrollments.filter((e) => e.status === 'completed').length
-  const inProgress = enrollments.filter((e) => e.status === 'active' && e.progress_percent > 0).length
+  const TABS = [
+    { key: 'learning', label: 'My courses' },
+    { key: 'payments', label: 'Payments' },
+    { key: 'sessions', label: 'Sessions' },
+    { key: 'profile',  label: 'Profile' },
+  ]
+
+  const stats = [
+    { num: enrollments.length, label: 'Enrolled' },
+    { num: enrollments.filter((e) => e.status === 'active' && e.progress_percent > 0).length, label: 'In progress' },
+    { num: enrollments.filter((e) => e.status === 'completed').length, label: 'Completed' },
+  ]
 
   return (
-    <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
-      <div className="page-header">
-        <h1>My Dashboard</h1>
-        <p>Hello, {user?.full_name} 👋</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem', marginBottom: '2rem' }}>
-        {[
-          { num: enrollments.length, label: 'Total Enrolled' },
-          { num: inProgress, label: 'In Progress' },
-          { num: completed, label: 'Completed' },
-        ].map((s) => (
-          <div key={s.label} className="card stat-card">
-            <div className="stat-num">{s.num}</div>
-            <div className="stat-label">{s.label}</div>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      {/* Hero */}
+      <div className="page-hero">
+        <div className="container page-hero-content">
+          <p className="page-hero-eyebrow">Dashboard</p>
+          <h1>Hello, <em>{user?.full_name?.split(' ')[0]}</em> 👋</h1>
+          <div className="stats-row">
+            {stats.map((s) => (
+              <div key={s.label} className="stat-item">
+                <span className="stat-num">{s.num}</span>
+                <span className="stat-label">{s.label}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="tabs">
-        {['learning', 'payments', 'sessions', 'profile'].map((t) => (
-          <button key={t} className={`tab-btn ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); setMsg(''); setError('') }}>
-            {t === 'learning' ? '📚 My Courses' : t === 'payments' ? '💳 Payments' : t === 'sessions' ? '🔐 Sessions' : '👤 Profile'}
-          </button>
-        ))}
-      </div>
+      <div className="container page-body" style={{ paddingTop: '1.75rem' }}>
+        {msg && <div className="alert alert-success">{msg}</div>}
+        {err && <div className="alert alert-error">{err}</div>}
 
-      {msg && <div className="alert alert-success">{msg}</div>}
-      {error && <div className="alert alert-error">{error}</div>}
+        <div className="tabs">
+          {TABS.map(({ key, label }) => (
+            <button key={key} className={`tab-btn${tab === key ? ' active' : ''}`}
+              onClick={() => { setTab(key); setMsg(''); setErr('') }}>
+              {label}
+            </button>
+          ))}
+        </div>
 
-      {loading ? <div className="spinner-center"><div className="spinner" /></div> : (
-        <>
-          {tab === 'learning' && (
-            <div>
-              {enrollments.length === 0 ? (
-                <div className="text-center text-muted" style={{ padding: '3rem 0' }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📖</div>
-                  <p>You haven't enrolled in any courses yet.</p>
-                  <button className="btn btn-primary mt-4" onClick={() => navigate('/')}>Browse Courses</button>
+        {loading ? (
+          <div className="spinner-wrap"><div className="spinner" /></div>
+        ) : (
+          <>
+            {/* ── My Courses ── */}
+            {tab === 'learning' && (
+              !enrollments.length ? (
+                <div className="empty">
+                  <div className="empty-icon">📖</div>
+                  <h3>No courses yet</h3>
+                  <p>Enroll in a course to start learning.</p>
+                  <button className="btn btn-primary" onClick={() => navigate('/')}>Browse courses</button>
                 </div>
               ) : (
                 <div className="grid grid-2">
                   {enrollments.map((e) => (
-                    <div key={e.id} className="card" style={{ cursor: 'pointer' }} onClick={() => navigate(`/courses/${e.course_id}`)}>
+                    <div key={e.id} className="card" style={{ cursor: 'pointer' }}
+                      onClick={() => navigate(`/courses/${e.course_id}`)}>
+                      {/* Progress top bar */}
+                      <div style={{ height: 3, background: 'var(--bg-2)' }}>
+                        <div style={{ height: '100%', width: `${e.progress_percent}%`, background: 'var(--mint)', transition: 'width .5s' }} />
+                      </div>
                       <div className="card-body">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`badge ${e.status === 'completed' ? 'badge-success' : 'badge-primary'}`}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.75rem' }}>
+                          <span className={`badge ${e.status === 'completed' ? 'badge-mint' : 'badge-green'}`}>
                             {e.status}
                           </span>
-                          <span className="text-sm text-muted">{e.progress_percent}%</span>
+                          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1rem', color: 'var(--mint)' }}>
+                            {e.progress_percent}%
+                          </span>
                         </div>
-                        <div className="progress-bar mb-3">
+                        <div className="progress" style={{ marginBottom: '.875rem' }}>
                           <div className="progress-fill" style={{ width: `${e.progress_percent}%` }} />
                         </div>
-                        <p className="text-sm text-muted">Enrolled {new Date(e.enrolled_at).toLocaleDateString()}</p>
-                        {e.completed_at && <p className="text-sm" style={{ color: 'var(--success)' }}>✓ Completed {new Date(e.completed_at).toLocaleDateString()}</p>}
+                        <p style={{ fontSize: '.8rem', color: 'var(--text-3)', fontWeight: 500 }}>
+                          Enrolled {new Date(e.enrolled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                        {e.completed_at && (
+                          <p style={{ fontSize: '.8rem', color: 'var(--mint)', fontWeight: 600, marginTop: '.25rem' }}>
+                            ✓ Completed {new Date(e.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+              )
+            )}
 
-          {tab === 'payments' && (
-            <div>
-              {payments.length === 0 ? (
-                <p className="text-muted">No payments found.</p>
-              ) : payments.map((p) => (
-                <div key={p.id} className="card mb-3">
-                  <div className="card-body flex items-center justify-between">
-                    <div>
-                      <div className="font-bold">${Number(p.amount).toFixed(2)} {p.currency}</div>
-                      <div className="text-sm text-muted">{new Date(p.created_at).toLocaleDateString()}</div>
-                    </div>
-                    <span className={`badge ${p.status === 'completed' ? 'badge-success' : p.status === 'failed' ? 'badge-danger' : 'badge-muted'}`}>
-                      {p.status}
-                    </span>
-                  </div>
+            {/* ── Payments ── */}
+            {tab === 'payments' && (
+              !payments.length ? (
+                <div className="empty">
+                  <div className="empty-icon">💳</div>
+                  <h3>No payments yet</h3>
+                  <p>Your purchase history will appear here.</p>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {tab === 'sessions' && (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 style={{ fontWeight: 700 }}>Active Sessions ({sessions.length})</h3>
-                <button className="btn btn-danger btn-sm" onClick={handleLogoutAll}>Logout All Devices</button>
-              </div>
-              {sessions.map((s) => (
-                <div key={s.id} className="card mb-3">
-                  <div className="card-body flex items-center justify-between">
-                    <div>
-                      <div className="font-bold">{s.device_name || 'Unknown Device'}</div>
-                      <div className="text-sm text-muted">
-                        {s.device_type} · {s.ip_address} · Last used {new Date(s.last_used_at).toLocaleString()}
+              ) : (
+                <div>
+                  {payments.map((p) => (
+                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '.875rem 1.125rem', background: 'var(--surface)', border: '1px solid var(--border)',
+                      borderRadius: 'var(--r-md)', marginBottom: '.5rem' }}>
+                      <div>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.9375rem' }}>
+                          ${Number(p.amount).toFixed(2)}
+                          <span style={{ fontWeight: 400, fontSize: '.8125rem', color: 'var(--text-3)', marginLeft: '.375rem' }}>{p.currency}</span>
+                        </div>
+                        <div style={{ fontSize: '.75rem', color: 'var(--text-3)', fontWeight: 500, marginTop: '.125rem' }}>
+                          {new Date(p.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </div>
                       </div>
+                      <span className={`badge ${p.status === 'completed' ? 'badge-mint' : 'badge-neutral'}`}>{p.status}</span>
                     </div>
-                    <button className="btn btn-outline btn-sm btn-danger" onClick={() => handleRevokeSession(s.id)}>Revoke</button>
+                  ))}
+                </div>
+              )
+            )}
+
+            {/* ── Sessions ── */}
+            {tab === 'sessions' && (
+              <div>
+                <div className="section-heading">
+                  <h2>Active sessions <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({sessions.length})</span></h2>
+                  <button className="btn btn-danger btn-sm" onClick={handleLogoutAll}>Sign out everywhere</button>
+                </div>
+                {!sessions.length && <p style={{ color: 'var(--text-3)', fontSize: '.875rem' }}>No active sessions found.</p>}
+                {sessions.map((s) => {
+                  const name = s.device_name || 'Unknown device'
+                  const icon = name.toLowerCase().includes('firefox') ? '🦊'
+                    : name.toLowerCase().includes('chrome') ? '🌐'
+                    : name.toLowerCase().includes('safari') ? '🧭'
+                    : name.toLowerCase().includes('edge') ? '🔷'
+                    : s.device_type === 'mobile' ? '📱' : '💻'
+                  const typeLabel = s.device_type === 'mobile' ? 'Mobile' : 'Desktop'
+                  return (
+                    <div key={s.id} className="session-row">
+                      <div style={{ fontSize: '1.75rem', lineHeight: 1, flexShrink: 0 }}>{icon}</div>
+                      <div className="session-row-info">
+                        <div className="session-device">{name}</div>
+                        <div className="session-meta">
+                          {typeLabel} · {s.ip_address || 'unknown IP'} · Last active {new Date(s.last_used_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                      <button className="btn btn-secondary btn-sm" onClick={() => handleRevoke(s.id)}>Revoke</button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* ── Profile ── */}
+            {tab === 'profile' && (
+              <div className="grid grid-2">
+                <div className="card">
+                  <div className="card-body">
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '1.25rem', fontSize: '1rem' }}>
+                      Edit profile
+                    </h3>
+                    <form onSubmit={handleProfile}>
+                      <div className="form-group">
+                        <label>Full name</label>
+                        <input className="input" value={profileForm.full_name}
+                          onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })} />
+                      </div>
+                      <div className="form-group">
+                        <label>Bio</label>
+                        <textarea className="input" rows={4} value={profileForm.bio}
+                          onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                          placeholder="Tell us about yourself…" />
+                      </div>
+                      <button className="btn btn-primary w-full">Save changes</button>
+                    </form>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {tab === 'profile' && (
-            <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div className="card">
-                <div className="card-body">
-                  <h3 style={{ fontWeight: 700, marginBottom: '1.2rem' }}>Edit Profile</h3>
-                  <form onSubmit={handleProfile}>
-                    <div className="form-group">
-                      <label>Full Name</label>
-                      <input className="form-control" value={profileForm.full_name}
-                        onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })} />
-                    </div>
-                    <div className="form-group">
-                      <label>Bio</label>
-                      <textarea className="form-control" rows={3} value={profileForm.bio}
-                        onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })} />
-                    </div>
-                    <button className="btn btn-primary w-full">Save Changes</button>
-                  </form>
+                <div className="card">
+                  <div className="card-body">
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '1.25rem', fontSize: '1rem' }}>
+                      Change password
+                    </h3>
+                    <form onSubmit={handlePwd}>
+                      <div className="form-group">
+                        <label>Current password</label>
+                        <input className="input" type="password" value={pwdForm.current_password}
+                          onChange={(e) => setPwdForm({ ...pwdForm, current_password: e.target.value })}
+                          autoComplete="current-password" />
+                      </div>
+                      <div className="form-group">
+                        <label>New password</label>
+                        <input className="input" type="password" value={pwdForm.new_password} minLength={8}
+                          onChange={(e) => setPwdForm({ ...pwdForm, new_password: e.target.value })}
+                          autoComplete="new-password" placeholder="At least 8 characters" />
+                      </div>
+                      <button className="btn btn-dark w-full">Change password</button>
+                    </form>
+                  </div>
                 </div>
               </div>
-
-              <div className="card">
-                <div className="card-body">
-                  <h3 style={{ fontWeight: 700, marginBottom: '1.2rem' }}>Change Password</h3>
-                  <form onSubmit={handlePwd}>
-                    <div className="form-group">
-                      <label>Current Password</label>
-                      <input className="form-control" type="password" value={pwdForm.current_password}
-                        onChange={(e) => setPwdForm({ ...pwdForm, current_password: e.target.value })} />
-                    </div>
-                    <div className="form-group">
-                      <label>New Password</label>
-                      <input className="form-control" type="password" value={pwdForm.new_password} minLength={8}
-                        onChange={(e) => setPwdForm({ ...pwdForm, new_password: e.target.value })} />
-                    </div>
-                    <button className="btn btn-primary w-full">Change Password</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

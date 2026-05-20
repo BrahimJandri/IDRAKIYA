@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { register as apiRegister, login as apiLogin, getMe } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
+import { getDeviceInfo } from '../api/device'
 
 export default function RegisterPage() {
   const { login } = useAuth()
@@ -18,62 +19,90 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await apiRegister(form)
+      const { deviceName, deviceType } = getDeviceInfo()
       const { data: tokens } = await apiLogin({
-        email: form.email,
-        password: form.password,
-        device_name: navigator.userAgent.slice(0, 40),
-        device_type: /Mobi/.test(navigator.userAgent) ? 'mobile' : 'desktop',
+        email: form.email, password: form.password,
+        device_name: deviceName,
+        device_type: deviceType,
       })
+      localStorage.setItem('access_token', tokens.access_token)
+      localStorage.setItem('refresh_token', tokens.refresh_token)
       const { data: user } = await getMe()
       login(tokens, user)
       navigate('/')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed')
+      setError(err.response?.data?.detail || 'Registration failed.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-card">
-        <div className="auth-logo">IDRAK<span>IYA</span></div>
-        <h2>Create account</h2>
-        <p className="subtitle">Start learning or teaching today</p>
+    <div className="auth-layout">
+      <div className="auth-brand-panel">
+        <div className="auth-brand-inner">
+          <div className="auth-logo-mark">
+            <div className="auth-logo-pill" />
+            <div className="auth-logo-dot" />
+          </div>
+          <h1>IDRAK<em>IYA</em></h1>
+          <p className="auth-brand-tagline">The journey begins with understanding</p>
+          <blockquote className="auth-brand-quote">
+            Join thousands of learners.<br />
+            Start teaching or learning today.
+          </blockquote>
+        </div>
+      </div>
 
-        {error && <div className="alert alert-error">{error}</div>}
+      <div className="auth-form-panel">
+        <div className="auth-form-inner">
+          <h2>Create account</h2>
+          <p className="subtitle">Start your journey with IDRAKIYA</p>
 
-        <form onSubmit={submit}>
-          <div className="form-group">
-            <label>Full Name</label>
-            <input className="form-control" name="full_name" value={form.full_name}
-              onChange={handle} required placeholder="Ahmed Al-Rashid" />
-          </div>
-          <div className="form-group">
-            <label>Email</label>
-            <input className="form-control" type="email" name="email" value={form.email}
-              onChange={handle} required placeholder="you@example.com" />
-          </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input className="form-control" type="password" name="password" value={form.password}
-              onChange={handle} required placeholder="Min. 8 characters" minLength={8} />
-          </div>
-          <div className="form-group">
-            <label>I want to</label>
-            <select className="form-control" name="role" value={form.role} onChange={handle}>
-              <option value="student">Learn (Student)</option>
-              <option value="instructor">Teach (Instructor)</option>
-            </select>
-          </div>
-          <button className="btn btn-primary w-full mt-2" disabled={loading}>
-            {loading ? 'Creating account…' : 'Create Account'}
-          </button>
-        </form>
+          {error && <div className="alert alert-error">{error}</div>}
 
-        <p className="text-center text-sm mt-6 text-muted">
-          Already have an account? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>Sign in</Link>
-        </p>
+          <form onSubmit={submit}>
+            <div className="form-group">
+              <label htmlFor="full_name">Full name</label>
+              <input id="full_name" className="input" name="full_name" value={form.full_name}
+                onChange={handle} required autoComplete="name" placeholder="Ahmed Al-Rashid" />
+            </div>
+            <div className="form-group">
+              <label htmlFor="reg-email">Email</label>
+              <input id="reg-email" className="input" type="email" name="email" value={form.email}
+                onChange={handle} required autoComplete="email" placeholder="you@example.com" />
+            </div>
+            <div className="form-group">
+              <label htmlFor="reg-password">Password</label>
+              <input id="reg-password" className="input" type="password" name="password"
+                value={form.password} onChange={handle} required minLength={8}
+                autoComplete="new-password" placeholder="At least 8 characters" />
+            </div>
+            <div className="form-group">
+              <label>I want to</label>
+              <div className="role-grid">
+                {[
+                  { value: 'student', icon: '🎓', label: 'Learn', sub: 'Student' },
+                  { value: 'instructor', icon: '🧑‍🏫', label: 'Teach', sub: 'Instructor' },
+                ].map((opt) => (
+                  <label key={opt.value} className={`role-option${form.role === opt.value ? ' selected' : ''}`}>
+                    <input type="radio" name="role" value={opt.value}
+                      checked={form.role === opt.value} onChange={handle} />
+                    <div className="role-option-label">{opt.icon} {opt.label}</div>
+                    <div className="role-option-sub">{opt.sub}</div>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <button className="btn btn-primary btn-lg w-full" style={{ marginTop: '.25rem' }} disabled={loading}>
+              {loading ? 'Creating account…' : 'Create account'}
+            </button>
+          </form>
+
+          <p className="auth-footer-link">
+            Already have an account? <Link to="/login">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   )

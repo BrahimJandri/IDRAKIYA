@@ -16,32 +16,50 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="container">
-        <Link to="/" className="navbar-brand">IDRAK<span>IYA</span></Link>
+        <div className="navbar-inner">
+          <Link to="/" className="nav-brand">
+            <div className="nav-logo">
+              <div className="nav-logo-pill" />
+              <div className="nav-logo-dot" />
+            </div>
+            <span className="nav-brand-name">IDRAK<em>IYA</em></span>
+          </Link>
 
-        <div className="navbar-links">
-          <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}>Courses</NavLink>
-
-          {user ? (
-            <>
-              <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>
+          <div className="nav-links">
+            <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+              Courses
+            </NavLink>
+            {user && (
+              <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
                 My Learning
               </NavLink>
-              {isInstructor && (
-                <NavLink to="/instructor" className={({ isActive }) => isActive ? 'active' : ''}>
-                  Instructor
+            )}
+            {isInstructor && (
+              <NavLink to="/instructor" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                Teach
+              </NavLink>
+            )}
+
+            {user ? (
+              <>
+                <div className="nav-sep" />
+                <span className="nav-user">{user.full_name}</span>
+                <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="nav-sep" />
+                <NavLink to="/login" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                  Sign in
                 </NavLink>
-              )}
-              <span className="text-muted text-sm" style={{ borderLeft: '1px solid var(--border)', paddingLeft: '1rem' }}>
-                {user.full_name}
-              </span>
-              <button className="btn btn-outline btn-sm" onClick={handleLogout}>Logout</button>
-            </>
-          ) : (
-            <>
-              <NavLink to="/login" className={({ isActive }) => isActive ? 'active' : ''}>Login</NavLink>
-              <Link to="/register" className="btn btn-primary btn-sm">Get Started</Link>
-            </>
-          )}
+                <Link to="/register" className="btn btn-primary btn-sm">
+                  Get started
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>

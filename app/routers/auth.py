@@ -64,10 +64,16 @@ async def login(payload: UserLogin, request: Request, db: AsyncSession = Depends
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account disabled")
 
-    access_token = create_access_token({"sub": str(user.id), "role": user.role})
-    refresh_token = create_refresh_token({"sub": str(user.id)})
+    # Enforce single active session — revoke all existing sessions before creating a new one
+    await db.execute(
+        update(UserSession)
+        .where(UserSession.user_id == user.id, UserSession.is_active == True)
+        .values(is_active=False)
+    )
 
+    refresh_token = create_refresh_token({"sub": str(user.id)})
     expires_at = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+
     session = UserSession(
         user_id=user.id,
         token_hash=hash_token(refresh_token),
@@ -78,6 +84,14 @@ async def login(payload: UserLogin, request: Request, db: AsyncSession = Depends
         expires_at=expires_at,
     )
     db.add(session)
+    await db.flush()  # get session.id assigned
+
+    # Embed session_id so every request can be validated against DB
+    access_token = create_access_token({
+        "sub": str(user.id),
+        "role": user.role,
+        "sid": str(session.id),
+    })
     return TokenPair(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -117,7 +131,11 @@ async def refresh_token(payload: RefreshRequest, db: AsyncSession = Depends(get_
     session.expires_at = new_expires
     session.last_used_at = datetime.now(timezone.utc)
 
-    access_token = create_access_token({"sub": str(user.id), "role": user.role})
+    access_token = create_access_token({
+        "sub": str(user.id),
+        "role": user.role,
+        "sid": str(session.id),
+    })
     return TokenPair(access_token=access_token, refresh_token=new_refresh)
 
 
