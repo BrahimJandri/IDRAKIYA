@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { logout as apiLogout } from '../api/auth'
 
 export default function Navbar() {
-  const { user, logout, isInstructor } = useAuth()
+  const { user, logout, isInstructor, isAdmin } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -37,6 +37,12 @@ export default function Navbar() {
             {isInstructor && (
               <NavLink to="/instructor" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
                 Teach
+              </NavLink>
+            )}
+            {isAdmin && (
+              <NavLink to="/admin" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                style={{ color: 'var(--mint)' }}>
+                Admin
               </NavLink>
             )}
 

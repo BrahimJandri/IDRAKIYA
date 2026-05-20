@@ -1,6 +1,10 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: '/api/v1' })
+// In dev: Vite proxies /api/v1 → localhost:8000
+// In production: VITE_API_URL=https://your-backend.onrender.com/api/v1
+const BASE = import.meta.env.VITE_API_URL || '/api/v1'
+
+const api = axios.create({ baseURL: BASE })
 
 // Attach access token to every request
 api.interceptors.request.use((config) => {
@@ -38,7 +42,7 @@ api.interceptors.response.use(
     try {
       const refreshToken = localStorage.getItem('refresh_token')
       if (!refreshToken) throw new Error('no refresh token')
-      const { data } = await axios.post('/api/v1/auth/refresh', {
+      const { data } = await axios.post(`${BASE}/auth/refresh`, {
         refresh_token: refreshToken,
       })
       localStorage.setItem('access_token', data.access_token)

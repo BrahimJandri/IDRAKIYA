@@ -8,6 +8,7 @@ import CourseCatalog from './pages/CourseCatalog'
 import CourseDetail from './pages/CourseDetail'
 import StudentDashboard from './pages/StudentDashboard'
 import InstructorPanel from './pages/InstructorPanel'
+import AdminPanel from './pages/AdminPanel'
 
 export default function App() {
   return (
@@ -40,6 +41,14 @@ export default function App() {
                     element={
                       <ProtectedRoute role="instructor">
                         <InstructorPanel />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute role="admin">
+                        <AdminPanel />
                       </ProtectedRoute>
                     }
                   />

@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-from pydantic import AnyHttpUrl
 from typing import List
 
 
@@ -8,6 +7,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "IDRAKIYA"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
+    # Comma-separated in env: https://idrakiya.vercel.app,http://localhost:3000
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
 
     # Database
