@@ -1,13 +1,16 @@
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import List
 from uuid import UUID
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from jose import JWTError
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.core.permissions import Role
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -22,6 +25,7 @@ from app.dependencies.auth import get_current_user
 from app.models.session import UserSession
 from app.models.user import User
 from app.schemas.user import (
+    GoogleAuthPayload,
     PasswordChange,
     RefreshRequest,
     SessionOut,
@@ -87,6 +91,69 @@ async def login(payload: UserLogin, request: Request, db: AsyncSession = Depends
     await db.flush()  # get session.id assigned
 
     # Embed session_id so every request can be validated against DB
+    access_token = create_access_token({
+        "sub": str(user.id),
+        "role": user.role,
+        "sid": str(session.id),
+    })
+    return TokenPair(access_token=access_token, refresh_token=refresh_token)
+
+
+@router.post("/google", response_model=TokenPair)
+async def google_auth(payload: GoogleAuthPayload, request: Request, db: AsyncSession = Depends(get_db)):
+    """Sign in or register with a Google OAuth access token."""
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            headers={"Authorization": f"Bearer {payload.access_token}"},
+        )
+    if resp.status_code != 200:
+        raise HTTPException(status_code=400, detail="Invalid Google token")
+
+    info = resp.json()
+    email: str = info.get("email", "")
+    if not email:
+        raise HTTPException(status_code=400, detail="Google account has no email")
+
+    result = await db.execute(select(User).where(User.email == email))
+    user: User | None = result.scalar_one_or_none()
+
+    if user is None:
+        user = User(
+            email=email,
+            password_hash=hash_password(secrets.token_hex(32)),
+            full_name=info.get("name", email.split("@")[0]),
+            avatar_url=info.get("picture"),
+            role=Role.student,
+            is_active=True,
+            is_verified=True,
+        )
+        db.add(user)
+        await db.flush()
+    elif not user.is_active:
+        raise HTTPException(status_code=403, detail="Account disabled")
+
+    await db.execute(
+        update(UserSession)
+        .where(UserSession.user_id == user.id, UserSession.is_active == True)
+        .values(is_active=False)
+    )
+
+    refresh_token = create_refresh_token({"sub": str(user.id)})
+    expires_at = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+
+    session = UserSession(
+        user_id=user.id,
+        token_hash=hash_token(refresh_token),
+        device_name=payload.device_name,
+        device_type=payload.device_type,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+        expires_at=expires_at,
+    )
+    db.add(session)
+    await db.flush()
+
     access_token = create_access_token({
         "sub": str(user.id),
         "role": user.role,

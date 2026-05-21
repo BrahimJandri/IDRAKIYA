@@ -1,12 +1,34 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login as apiLogin, register as apiRegister, getMe } from '../api/auth'
+import { login as apiLogin, register as apiRegister, googleAuth, getMe } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 import { getDeviceInfo } from '../api/device'
 import { useTranslation } from 'react-i18next'
 import { EnvelopeIcon, LockClosedIcon, UserIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google'
 
-export default function AuthPage() {
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'configure-google-client-id'
+
+const GOOGLE_ICON = (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <path d="M17.64 9.2045C17.64 8.5663 17.5827 7.9527 17.4764 7.3636H9V10.845H13.8436C13.635 11.97 13.0009 12.9231 12.0477 13.5613V15.8195H14.9564C16.6582 14.2527 17.64 11.9454 17.64 9.2045Z" fill="#4285F4"/>
+    <path d="M9 18C11.43 18 13.4673 17.1941 14.9564 15.8195L12.0477 13.5613C11.2418 14.1013 10.2109 14.4204 9 14.4204C6.65591 14.4204 4.67182 12.8372 3.96409 10.71H0.957275V13.0418C2.43818 15.9831 5.48182 18 9 18Z" fill="#34A853"/>
+    <path d="M3.96409 10.71C3.78409 10.17 3.68182 9.5931 3.68182 9C3.68182 8.4069 3.78409 7.83 3.96409 7.29V4.9582H0.957275C0.347727 6.1731 0 7.5477 0 9C0 10.4523 0.347727 11.8269 0.957275 13.0418L3.96409 10.71Z" fill="#FBBC05"/>
+    <path d="M9 3.5795C10.3214 3.5795 11.5077 4.0336 12.4405 4.9254L15.0218 2.344C13.4632 0.8918 11.4259 0 9 0C5.48182 0 2.43818 2.0168 0.957275 4.9582L3.96409 7.29C4.67182 5.1627 6.65591 3.5795 9 3.5795Z" fill="#EA4335"/>
+  </svg>
+)
+
+function GoogleButton({ onSuccess, onError, disabled, label }) {
+  const googleLogin = useGoogleLogin({ onSuccess, onError })
+  return (
+    <button className="btn-google" onClick={() => googleLogin()} disabled={disabled}>
+      {GOOGLE_ICON}
+      {label}
+    </button>
+  )
+}
+
+function AuthPageInner() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
@@ -30,6 +52,29 @@ export default function AuthPage() {
   }
 
   const toggleLang = () => i18n.changeLanguage(i18n.language === 'ar' ? 'fr' : 'ar')
+
+  const handleGoogleSuccess = async (tokenResponse) => {
+    setError('')
+    setLoading(true)
+    try {
+      const { deviceName, deviceType } = getDeviceInfo()
+      const { data: tokens } = await googleAuth({
+        access_token: tokenResponse.access_token,
+        device_name: deviceName,
+        device_type: deviceType,
+      })
+      localStorage.setItem('access_token', tokens.access_token)
+      localStorage.setItem('refresh_token', tokens.refresh_token)
+      const { data: user } = await getMe()
+      login(tokens, user)
+      navigate('/courses')
+    } catch (err) {
+      setError(err.response?.data?.detail || t('login.googleError'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
 
   const submit = async (e) => {
     e.preventDefault()
@@ -171,6 +216,9 @@ export default function AuthPage() {
             </button>
           </form>
 
+          <div className="auth-or-divider"><span>{t('login.orDivider')}</span></div>
+          <GoogleButton onSuccess={handleGoogleSuccess} onError={() => setError(t('login.googleError'))} disabled={loading} label={t('login.continueWithGoogle')} />
+
           <p className="auth-footer-link">
             {tab === 'login' ? (
               <>{t('login.noAccount')} <button className="auth-switch-btn" onClick={() => switchTab('register')}>{t('login.createOne')}</button></>
@@ -213,4 +261,15 @@ export default function AuthPage() {
 
     </div>
   )
+}
+
+export default function AuthPage() {
+  if (GOOGLE_CLIENT_ID) {
+    return (
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <AuthPageInner />
+      </GoogleOAuthProvider>
+    )
+  }
+  return <AuthPageInner />
 }

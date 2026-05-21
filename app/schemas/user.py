@@ -61,6 +61,12 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class GoogleAuthPayload(BaseModel):
+    access_token: str
+    device_name: Optional[str] = None
+    device_type: Optional[str] = None
+
+
 class SessionOut(BaseModel):
     id: UUID
     device_name: Optional[str]
