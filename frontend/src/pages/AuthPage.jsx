@@ -4,8 +4,9 @@ import { login as apiLogin, register as apiRegister, googleAuth, getMe } from '.
 import { useAuth } from '../context/AuthContext'
 import { getDeviceInfo } from '../api/device'
 import { useTranslation } from 'react-i18next'
-import { EnvelopeIcon, LockClosedIcon, UserIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import { EnvelopeIcon, LockClosedIcon, UserIcon, EyeIcon, EyeSlashIcon, SunIcon, MoonIcon } from '@heroicons/react/24/outline'
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google'
+import { useTheme } from '../hooks/useTheme'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'configure-google-client-id'
 
@@ -32,6 +33,7 @@ function AuthPageInner() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+  const { isDark, toggle: toggleTheme } = useTheme()
 
   const [tab, setTab]         = useState('login')   // 'login' | 'register'
   const [form, setForm]       = useState({ full_name: '', email: '', password: '', role: 'student' })
@@ -123,9 +125,14 @@ function AuthPageInner() {
               </div>
               <span className="auth-form-logo-name">IDRAK<em>IYA</em></span>
             </div>
-            <button className="lang-toggle-light" onClick={toggleLang}>
-              {i18n.language === 'ar' ? 'FR' : 'ع'}
-            </button>
+            <div style={{ display: 'flex', gap: '.375rem' }}>
+              <button className="auth-icon-btn" onClick={toggleTheme} title={isDark ? 'Light mode' : 'Dark mode'}>
+                {isDark ? <SunIcon /> : <MoonIcon />}
+              </button>
+              <button className="lang-toggle-light" onClick={toggleLang}>
+                {i18n.language === 'ar' ? 'FR' : 'ع'}
+              </button>
+            </div>
           </div>
 
           {/* Tab switcher */}
