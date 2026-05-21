@@ -36,6 +36,11 @@ api.interceptors.response.use(
     if (error.response?.status !== 401 || original._retry) {
       return Promise.reject(error)
     }
+    // No refresh token means user is not logged in — return the error as-is
+    // (e.g. wrong password on login returns 401; don't try to refresh)
+    if (!localStorage.getItem('refresh_token')) {
+      return Promise.reject(error)
+    }
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         queue.push({ resolve, reject })
@@ -62,9 +67,9 @@ api.interceptors.response.use(
       processQueue(err, null)
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
-      // Only redirect if not already on an auth page
-      if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
-        window.location.href = '/login'
+      // Only redirect if not already on the auth page
+      if (window.location.pathname !== '/') {
+        window.location.href = '/'
       }
       return Promise.reject(err)
     } finally {
