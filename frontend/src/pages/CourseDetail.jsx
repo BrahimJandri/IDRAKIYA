@@ -27,7 +27,7 @@ export default function CourseDetail() {
   useEffect(() => {
     setLoading(true)
     Promise.all([
-      getCourse(id).then((r) => setCourse(r.data)).catch(() => navigate('/')),
+      getCourse(id).then((r) => setCourse(r.data)).catch(() => navigate('/courses')),
       listReviews(id).then((r) => setReviews(r.data)).catch(() => {}),
       user ? getEnrollment(id).then((r) => setEnrollment(r.data)).catch(() => {}) : Promise.resolve(),
     ]).finally(() => setLoading(false))

@@ -12,7 +12,7 @@ export default function Navbar() {
     const rt = localStorage.getItem('refresh_token')
     if (rt) await apiLogout(rt).catch(() => {})
     logout()
-    navigate('/login')
+    navigate('/')
   }
 
   const toggleLang = () => {
@@ -23,7 +23,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="container">
         <div className="navbar-inner">
-          <Link to="/" className="nav-brand">
+          <Link to="/courses" className="nav-brand">
             <div className="nav-logo">
               <div className="nav-logo-pill" />
               <div className="nav-logo-dot" />
@@ -32,7 +32,7 @@ export default function Navbar() {
           </Link>
 
           <div className="nav-links">
-            <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+            <NavLink to="/courses" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
               {t('nav.courses')}
             </NavLink>
             {user && (

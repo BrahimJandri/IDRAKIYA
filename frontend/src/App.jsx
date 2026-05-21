@@ -1,67 +1,75 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import Navbar from './components/Navbar'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
+import AuthPage from './pages/AuthPage'
 import CourseCatalog from './pages/CourseCatalog'
 import CourseDetail from './pages/CourseDetail'
 import StudentDashboard from './pages/StudentDashboard'
 import InstructorPanel from './pages/InstructorPanel'
 import AdminPanel from './pages/AdminPanel'
 
+function GuestRoute({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return null
+  return user ? <Navigate to="/courses" replace /> : children
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public auth routes (no navbar) */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Root — combined login/register, redirects to /courses if already logged in */}
+            <Route path="/" element={<GuestRoute><AuthPage /></GuestRoute>} />
 
-          {/* Main layout with navbar */}
-          <Route
-            path="/*"
-            element={
-              <>
-                <Navbar />
-                <Routes>
-                  <Route path="/" element={<CourseCatalog />} />
-                  <Route path="/courses/:id" element={<CourseDetail />} />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <StudentDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/instructor"
-                    element={
-                      <ProtectedRoute role="instructor">
-                        <InstructorPanel />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute role="admin">
-                        <AdminPanel />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            {/* Legacy auth URLs → root */}
+            <Route path="/login"    element={<Navigate to="/" replace />} />
+            <Route path="/register" element={<Navigate to="/" replace />} />
+
+            {/* Main app — all routes with Navbar */}
+            <Route
+              path="/*"
+              element={
+                <>
+                  <Navbar />
+                  <Routes>
+                    <Route path="/courses"     element={<CourseCatalog />} />
+                    <Route path="/courses/:id" element={<CourseDetail />} />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <StudentDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/instructor"
+                      element={
+                        <ProtectedRoute role="instructor">
+                          <InstructorPanel />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute role="admin">
+                          <AdminPanel />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="*" element={<Navigate to="/courses" replace />} />
+                  </Routes>
+                </>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </ErrorBoundary>
   )
 }
