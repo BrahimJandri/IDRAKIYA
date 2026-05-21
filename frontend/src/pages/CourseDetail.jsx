@@ -4,11 +4,13 @@ import { getCourse, getLesson } from '../api/courses'
 import { enroll, getEnrollment, updateProgress } from '../api/enrollments'
 import { listReviews, leaveReview } from '../api/payments'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 
 export default function CourseDetail() {
   const { id } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
 
   const [course, setCourse] = useState(null)
   const [enrollment, setEnrollment] = useState(null)
@@ -37,17 +39,17 @@ export default function CourseDetail() {
     try {
       const { data } = await enroll(id)
       setEnrollment(data)
-    } catch (e) { setError(e.response?.data?.detail || 'Enrollment failed') }
+    } catch (e) { setError(e.response?.data?.detail || t('course.enrollmentFailed')) }
     finally { setEnrolling(false) }
   }
 
   const openLesson = async (lesson, chapterId) => {
-    if (!enrollment && !lesson.is_preview) { setError('Enroll to access this lesson'); return }
+    if (!enrollment && !lesson.is_preview) { setError(t('course.enrollToAccess')); return }
     setError(''); setActiveLesson({ ...lesson, chapterId })
     try {
       const { data } = await getLesson(id, chapterId, lesson.id)
       setLessonData(data)
-    } catch (e) { setError(e.response?.data?.detail || 'Cannot load lesson') }
+    } catch (e) { setError(e.response?.data?.detail || t('course.cannotLoadLesson')) }
   }
 
   const markComplete = async () => {
@@ -65,8 +67,10 @@ export default function CourseDetail() {
       const { data } = await leaveReview(id, review)
       setReviews((r) => [data, ...r])
       setReviewSent(true)
-    } catch (e) { setError(e.response?.data?.detail || 'Could not submit review') }
+    } catch (e) { setError(e.response?.data?.detail || t('course.reviewFailed')) }
   }
+
+  const locale = i18n.language === 'ar' ? 'ar-DZ' : 'fr-FR'
 
   if (loading) return <div className="spinner-wrap"><div className="spinner" /></div>
   if (!course) return null
@@ -87,7 +91,7 @@ export default function CourseDetail() {
             <div style={{ flex: 1, minWidth: 260 }}>
               <div style={{ display: 'flex', gap: '.375rem', flexWrap: 'wrap', marginBottom: '.875rem' }}>
                 <span className="badge badge-dark">{course.level}</span>
-                {isFree ? <span className="badge badge-mint">Free</span>
+                {isFree ? <span className="badge badge-mint">{t('common.free')}</span>
                   : <span className="badge badge-white">${Number(course.price).toFixed(2)}</span>}
                 {course.category && <span className="badge badge-white">{course.category.name}</span>}
               </div>
@@ -100,7 +104,7 @@ export default function CourseDetail() {
               </p>
 
               <div style={{ display: 'flex', gap: '1.25rem', color: 'rgba(255,255,255,.45)', fontSize: '.8125rem', fontWeight: 500, marginBottom: '1.75rem' }}>
-                <span>📖 {course.total_lessons} lessons</span>
+                <span>📖 {course.total_lessons} {t('common.lessons')}</span>
                 {course.duration_hours && <span>⏱ {course.duration_hours}h</span>}
                 <span>🌐 {course.language}</span>
                 {avgRating && <span>⭐ {avgRating} ({reviews.length})</span>}
@@ -109,7 +113,7 @@ export default function CourseDetail() {
               {enrollment ? (
                 <div style={{ maxWidth: 320 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '.5rem' }}>
-                    <span className="badge badge-mint">Enrolled</span>
+                    <span className="badge badge-mint">{t('course.enrolledBadge')}</span>
                     <span style={{ color: 'rgba(255,255,255,.6)', fontSize: '.875rem', fontWeight: 600 }}>
                       {enrollment.progress_percent}%
                     </span>
@@ -120,7 +124,7 @@ export default function CourseDetail() {
                 </div>
               ) : (
                 <button className="btn btn-primary btn-lg" onClick={handleEnroll} disabled={enrolling}>
-                  {enrolling ? 'Enrolling…' : isFree ? 'Enroll for free' : `Enroll — $${Number(course.price).toFixed(2)}`}
+                  {enrolling ? t('course.enrolling') : isFree ? t('course.enrollFree') : t('course.enroll', { price: Number(course.price).toFixed(2) })}
                 </button>
               )}
             </div>
@@ -141,7 +145,7 @@ export default function CourseDetail() {
             <div className="player-header">
               <span className="player-title">{lessonData.title}</span>
               <button className="btn btn-ghost btn-sm" onClick={() => { setActiveLesson(null); setLessonData(null) }}>
-                ✕ Close
+                {t('course.closePlayer')}
               </button>
             </div>
             <div className="player-body">
@@ -149,7 +153,7 @@ export default function CourseDetail() {
                 ? <video controls className="player-video"><source src={lessonData.video_url} /></video>
                 : <div className="player-blank">
                     <span style={{ fontSize: '2rem' }}>🎬</span>
-                    <span>No video URL set for this lesson</span>
+                    <span>{t('course.noVideo')}</span>
                   </div>
               }
               {lessonData.description && (
@@ -160,12 +164,12 @@ export default function CourseDetail() {
               <div className="player-actions">
                 {lessonData.resource_url && (
                   <a href={lessonData.resource_url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
-                    📎 {lessonData.resource_name || 'Download resource'}
+                    📎 {lessonData.resource_name || t('course.downloadResource')}
                   </a>
                 )}
                 {enrollment && (
                   <button className="btn btn-primary btn-sm" onClick={markComplete}>
-                    ✓ Mark complete
+                    {t('course.markComplete')}
                   </button>
                 )}
               </div>
@@ -174,11 +178,11 @@ export default function CourseDetail() {
         )}
 
         <div className="tabs">
-          {['content', 'reviews'].map((t) => (
-            <button key={t} className={`tab-btn${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>
-              {t === 'content'
-                ? `Course content  ·  ${course.chapters?.length || 0} chapters`
-                : `Reviews  ·  ${reviews.length}`}
+          {['content', 'reviews'].map((tabKey) => (
+            <button key={tabKey} className={`tab-btn${tab === tabKey ? ' active' : ''}`} onClick={() => setTab(tabKey)}>
+              {tabKey === 'content'
+                ? t('course.tabContent', { count: course.chapters?.length || 0 })
+                : t('course.tabReviews', { count: reviews.length })}
             </button>
           ))}
         </div>
@@ -188,22 +192,22 @@ export default function CourseDetail() {
             {!course.chapters?.length && (
               <div className="empty">
                 <div className="empty-icon">📂</div>
-                <h3>No content yet</h3>
-                <p>The instructor hasn't added chapters yet.</p>
+                <h3>{t('course.noContentTitle')}</h3>
+                <p>{t('course.noContentSub')}</p>
               </div>
             )}
             {course.chapters?.map((chapter) => (
               <div key={chapter.id} className="chapter-block">
                 <div className="chapter-header">
                   <span className="chapter-title">{chapter.title}</span>
-                  {chapter.is_free_preview && <span className="badge badge-mint">Free preview</span>}
+                  {chapter.is_free_preview && <span className="badge badge-mint">{t('course.freePreview')}</span>}
                   <span style={{ color: 'rgba(255,255,255,.4)', fontSize: '.75rem', fontWeight: 500 }}>
-                    {chapter.lessons?.length || 0} lessons
+                    {chapter.lessons?.length || 0} {t('common.lessons')}
                   </span>
                 </div>
                 <div className="chapter-body">
                   {!chapter.lessons?.length && (
-                    <p style={{ padding: '.5rem .25rem', color: 'var(--text-3)', fontSize: '.875rem' }}>No lessons yet.</p>
+                    <p style={{ padding: '.5rem .25rem', color: 'var(--text-3)', fontSize: '.875rem' }}>{t('course.noLessons')}</p>
                   )}
                   {chapter.lessons?.map((lesson) => {
                     const canView = lesson.is_preview || chapter.is_free_preview || !!enrollment
@@ -219,7 +223,7 @@ export default function CourseDetail() {
                             {isPlaying ? '▶' : canView ? '○' : '🔒'}
                           </span>
                           <span className="lesson-row-title">{lesson.title}</span>
-                          {lesson.is_preview && <span className="badge badge-neutral">Preview</span>}
+                          {lesson.is_preview && <span className="badge badge-neutral">{t('course.preview')}</span>}
                         </div>
                         {lesson.duration_seconds && (
                           <span className="lesson-row-dur">{Math.floor(lesson.duration_seconds / 60)}m</span>
@@ -239,11 +243,11 @@ export default function CourseDetail() {
               <div className="card" style={{ marginBottom: '1.25rem' }}>
                 <div className="card-body">
                   <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '1.125rem', fontSize: '1rem' }}>
-                    Leave a review
+                    {t('course.leaveReview')}
                   </h3>
                   <form onSubmit={submitReview}>
                     <div className="form-group">
-                      <label>Rating</label>
+                      <label>{t('course.rating')}</label>
                       <div style={{ display: 'flex', gap: '.25rem' }}>
                         {[1,2,3,4,5].map((n) => (
                           <button key={n} type="button"
@@ -254,12 +258,12 @@ export default function CourseDetail() {
                       </div>
                     </div>
                     <div className="form-group">
-                      <label>Comment</label>
+                      <label>{t('course.comment')}</label>
                       <textarea className="input" rows={3} value={review.comment}
                         onChange={(e) => setReview({ ...review, comment: e.target.value })}
-                        placeholder="Share your experience with this course…" />
+                        placeholder={t('course.commentPlaceholder')} />
                     </div>
-                    <button className="btn btn-primary">Submit review</button>
+                    <button className="btn btn-primary">{t('course.submitReview')}</button>
                   </form>
                 </div>
               </div>
@@ -267,8 +271,8 @@ export default function CourseDetail() {
             {!reviews.length ? (
               <div className="empty">
                 <div className="empty-icon">💬</div>
-                <h3>No reviews yet</h3>
-                <p>Be the first to review this course.</p>
+                <h3>{t('course.noReviewsTitle')}</h3>
+                <p>{t('course.noReviewsSub')}</p>
               </div>
             ) : reviews.map((r) => (
               <div key={r.id} className="card" style={{ marginBottom: '.75rem' }}>
@@ -276,7 +280,7 @@ export default function CourseDetail() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.5rem' }}>
                     <span style={{ color: '#f59e0b' }}>{'★'.repeat(Math.round(r.rating))}</span>
                     <span style={{ fontSize: '.75rem', color: 'var(--text-3)', fontWeight: 500 }}>
-                      {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {new Date(r.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   </div>
                   <p style={{ fontSize: '.9rem', color: 'var(--text-2)', lineHeight: 1.6 }}>{r.comment}</p>

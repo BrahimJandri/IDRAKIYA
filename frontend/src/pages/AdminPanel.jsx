@@ -5,6 +5,7 @@ import {
   listCategories, createCategory, deleteCategory,
   listAllPayments,
 } from '../api/admin'
+import { useTranslation } from 'react-i18next'
 
 // ── Tiny reusable components ────────────────────────────────────────────────
 
@@ -20,7 +21,7 @@ function StatCard({ num, label, sub, color = 'var(--mint)' }) {
   )
 }
 
-function Table({ cols, rows, empty = 'No records found.' }) {
+function Table({ cols, rows, empty }) {
   if (!rows.length) return (
     <div className="empty"><div className="empty-icon">📭</div><p>{empty}</p></div>
   )
@@ -66,6 +67,9 @@ function SearchBar({ value, onChange, placeholder }) {
 // ── Main panel ──────────────────────────────────────────────────────────────
 
 export default function AdminPanel() {
+  const { t, i18n } = useTranslation()
+  const locale = i18n.language === 'ar' ? 'ar-DZ' : 'fr-FR'
+
   const [tab, setTab]         = useState('stats')
   const [stats, setStats]     = useState(null)
   const [users, setUsers]     = useState([])
@@ -85,7 +89,6 @@ export default function AdminPanel() {
     setTimeout(() => { setMsg(''); setErr('') }, 4000)
   }
 
-  // Load on tab switch
   useEffect(() => {
     setLoading(true)
     const loaders = {
@@ -104,25 +107,25 @@ export default function AdminPanel() {
     try {
       const { data } = await updateUser(user.id, { role })
       setUsers((us) => us.map((u) => u.id === data.id ? data : u))
-      flash(`${user.full_name} is now ${role}`)
-    } catch (e) { flash(e.response?.data?.detail || 'Failed', true) }
+      flash(`${user.full_name} → ${role}`)
+    } catch (e) { flash(e.response?.data?.detail || t('admin.failed'), true) }
   }
 
   const handleToggleActive = async (user) => {
     try {
       const { data } = await updateUser(user.id, { is_active: !user.is_active })
       setUsers((us) => us.map((u) => u.id === data.id ? data : u))
-      flash(`${user.full_name} ${data.is_active ? 'activated' : 'suspended'}`)
-    } catch (e) { flash(e.response?.data?.detail || 'Failed', true) }
+      flash(`${user.full_name} ${data.is_active ? t('admin.users.active') : t('admin.users.suspended')}`)
+    } catch (e) { flash(e.response?.data?.detail || t('admin.failed'), true) }
   }
 
   const handleDeleteUser = async (user) => {
-    if (!confirm(`Delete user "${user.full_name}"? This cannot be undone.`)) return
+    if (!confirm(t('admin.users.deleteConfirm', { name: user.full_name }))) return
     try {
       await deleteUser(user.id)
       setUsers((us) => us.filter((u) => u.id !== user.id))
-      flash('User deleted')
-    } catch (e) { flash(e.response?.data?.detail || 'Failed', true) }
+      flash(t('admin.users.deleted'))
+    } catch (e) { flash(e.response?.data?.detail || t('admin.failed'), true) }
   }
 
   const filteredUsers = users.filter((u) =>
@@ -136,17 +139,17 @@ export default function AdminPanel() {
     try {
       const { data } = await adminUpdateCourse(course.id, { is_published: !course.is_published })
       setCourses((cs) => cs.map((c) => c.id === data.id ? data : c))
-      flash(data.is_published ? 'Course published' : 'Course unpublished')
-    } catch (e) { flash(e.response?.data?.detail || 'Failed', true) }
+      flash(data.is_published ? t('admin.courses.published') : t('admin.courses.draft'))
+    } catch (e) { flash(e.response?.data?.detail || t('admin.failed'), true) }
   }
 
   const handleDeleteCourse = async (course) => {
-    if (!confirm(`Delete "${course.title}"? This cannot be undone.`)) return
+    if (!confirm(t('admin.courses.deleteConfirm', { title: course.title }))) return
     try {
       await adminDeleteCourse(course.id)
       setCourses((cs) => cs.filter((c) => c.id !== course.id))
-      flash('Course deleted')
-    } catch (e) { flash(e.response?.data?.detail || 'Failed', true) }
+      flash(t('admin.courses.deleted'))
+    } catch (e) { flash(e.response?.data?.detail || t('admin.failed'), true) }
   }
 
   const filteredCourses = courses.filter((c) =>
@@ -162,40 +165,35 @@ export default function AdminPanel() {
       setCats((cs) => [...cs, data])
       setNewCat({ name: '', slug: '', description: '' })
       setShowCatForm(false)
-      flash('Category created')
-    } catch (e) { flash(e.response?.data?.detail || 'Failed', true) }
+      flash(t('admin.cats.created'))
+    } catch (e) { flash(e.response?.data?.detail || t('admin.failed'), true) }
   }
 
   const handleDeleteCat = async (cat) => {
-    if (!confirm(`Delete category "${cat.name}"?`)) return
+    if (!confirm(t('admin.cats.deleteConfirm', { name: cat.name }))) return
     try {
       await deleteCategory(cat.id)
       setCats((cs) => cs.filter((c) => c.id !== cat.id))
-      flash('Category deleted')
-    } catch (e) { flash(e.response?.data?.detail || 'Failed', true) }
+      flash(t('admin.cats.deleted'))
+    } catch (e) { flash(e.response?.data?.detail || t('admin.failed'), true) }
   }
 
   const TABS = [
-    { key: 'stats',    label: '📊 Overview' },
-    { key: 'users',    label: '👥 Users' },
-    { key: 'courses',  label: '🎓 Courses' },
-    { key: 'cats',     label: '🏷️ Categories' },
-    { key: 'payments', label: '💳 Payments' },
+    { key: 'stats',    label: t('admin.tabs.overview') },
+    { key: 'users',    label: t('admin.tabs.users') },
+    { key: 'courses',  label: t('admin.tabs.courses') },
+    { key: 'cats',     label: t('admin.tabs.categories') },
+    { key: 'payments', label: t('admin.tabs.payments') },
   ]
-
-  const roleBadge = (role) => {
-    const map = { admin: 'badge-dark', instructor: 'badge-mint', student: 'badge-neutral' }
-    return <span className={`badge ${map[role] || 'badge-neutral'}`}>{role}</span>
-  }
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       {/* Hero */}
       <div className="page-hero">
         <div className="container page-hero-content">
-          <p className="page-hero-eyebrow">Administration</p>
-          <h1>Admin <em>Panel</em></h1>
-          <p>Manage users, courses, categories, and monitor platform activity.</p>
+          <p className="page-hero-eyebrow">{t('admin.eyebrow')}</p>
+          <h1>{t('admin.title').replace(/<\/?1>/g, '')}</h1>
+          <p>{t('admin.subtitle')}</p>
         </div>
       </div>
 
@@ -220,28 +218,27 @@ export default function AdminPanel() {
             {tab === 'stats' && stats && (
               <div>
                 <div className="grid grid-3" style={{ marginBottom: '2rem' }}>
-                  <StatCard num={stats.total_users}       label="Total Users"       sub={`${stats.total_instructors} instructors`} />
-                  <StatCard num={stats.total_courses}     label="Total Courses"     sub={`${stats.published_courses} published`} />
-                  <StatCard num={stats.total_enrollments} label="Enrollments" />
-                  <StatCard num={stats.total_payments}    label="Paid Orders" />
-                  <StatCard num={`$${Number(stats.total_revenue).toFixed(2)}`} label="Total Revenue" color="var(--amber)" />
+                  <StatCard num={stats.total_users}       label={t('admin.stats.totalUsers')}   sub={`${stats.total_instructors} ${t('admin.stats.instructors')}`} />
+                  <StatCard num={stats.total_courses}     label={t('admin.stats.totalCourses')} sub={`${stats.published_courses} ${t('admin.stats.published')}`} />
+                  <StatCard num={stats.total_enrollments} label={t('admin.stats.enrollments')} />
+                  <StatCard num={stats.total_payments}    label={t('admin.stats.paidOrders')} />
+                  <StatCard num={`$${Number(stats.total_revenue).toFixed(2)}`} label={t('admin.stats.totalRevenue')} color="var(--amber)" />
                   <StatCard
                     num={`${stats.published_courses && stats.total_courses ? Math.round(stats.published_courses / stats.total_courses * 100) : 0}%`}
-                    label="Publish Rate"
+                    label={t('admin.stats.publishRate')}
                     color="var(--green-600)"
                   />
                 </div>
 
-                {/* Quick actions */}
                 <h2 className="section-heading" style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>
-                  Quick Actions
+                  {t('admin.quickActions')}
                 </h2>
                 <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
                   {[
-                    { label: '👥 Manage Users',    tab: 'users' },
-                    { label: '🎓 Manage Courses',  tab: 'courses' },
-                    { label: '🏷️ Categories',       tab: 'cats' },
-                    { label: '💳 View Payments',   tab: 'payments' },
+                    { label: t('admin.actions.manageUsers'),   tab: 'users' },
+                    { label: t('admin.actions.manageCourses'), tab: 'courses' },
+                    { label: t('admin.actions.categories'),    tab: 'cats' },
+                    { label: t('admin.actions.viewPayments'),  tab: 'payments' },
                   ].map((a) => (
                     <button key={a.tab} className="btn btn-secondary" onClick={() => setTab(a.tab)}>
                       {a.label}
@@ -255,12 +252,12 @@ export default function AdminPanel() {
             {tab === 'users' && (
               <div>
                 <div className="section-heading">
-                  <h2>Users <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({filteredUsers.length})</span></h2>
-                  <SearchBar value={userSearch} onChange={setUserSearch} placeholder="Search by name or email…" />
+                  <h2>{t('admin.users.title')} <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({filteredUsers.length})</span></h2>
+                  <SearchBar value={userSearch} onChange={setUserSearch} placeholder={t('admin.users.searchPlaceholder')} />
                 </div>
                 <div className="card">
                   <Table
-                    cols={['Name', 'Email', 'Role', 'Status', 'Joined', 'Actions']}
+                    cols={[t('admin.users.cols.name'), t('admin.users.cols.email'), t('admin.users.cols.role'), t('admin.users.cols.status'), t('admin.users.cols.joined'), t('admin.users.cols.actions')]}
                     rows={filteredUsers.map((u) => [
                       <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{u.full_name}</span>,
                       <span style={{ color: 'var(--text-3)' }}>{u.email}</span>,
@@ -270,26 +267,26 @@ export default function AdminPanel() {
                         style={{ fontFamily: 'var(--font-display)', fontSize: '.8rem', fontWeight: 600,
                           border: '1.5px solid var(--border)', borderRadius: 'var(--r-sm)',
                           padding: '.25rem .5rem', background: 'var(--surface)', cursor: 'pointer' }}>
-                        <option value="student">Student</option>
-                        <option value="instructor">Instructor</option>
-                        <option value="admin">Admin</option>
+                        <option value="student">{t('admin.users.roles.student')}</option>
+                        <option value="instructor">{t('admin.users.roles.instructor')}</option>
+                        <option value="admin">{t('admin.users.roles.admin')}</option>
                       </select>,
                       <span className={`badge ${u.is_active ? 'badge-mint' : 'badge-neutral'}`}>
-                        {u.is_active ? 'Active' : 'Suspended'}
+                        {u.is_active ? t('admin.users.active') : t('admin.users.suspended')}
                       </span>,
                       <span style={{ color: 'var(--text-3)', fontSize: '.8rem' }}>
-                        {new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {new Date(u.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>,
                       <div style={{ display: 'flex', gap: '.375rem' }}>
                         <button className="btn btn-secondary btn-sm" onClick={() => handleToggleActive(u)}>
-                          {u.is_active ? 'Suspend' : 'Activate'}
+                          {u.is_active ? t('admin.users.suspend') : t('admin.users.activate')}
                         </button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDeleteUser(u)}>
-                          Delete
+                          {t('admin.users.delete')}
                         </button>
                       </div>,
                     ])}
-                    empty="No users found."
+                    empty={t('admin.users.noRecords')}
                   />
                 </div>
               </div>
@@ -299,34 +296,34 @@ export default function AdminPanel() {
             {tab === 'courses' && (
               <div>
                 <div className="section-heading">
-                  <h2>Courses <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({filteredCourses.length})</span></h2>
-                  <SearchBar value={courseSearch} onChange={setCourseSearch} placeholder="Search courses…" />
+                  <h2>{t('admin.courses.title')} <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({filteredCourses.length})</span></h2>
+                  <SearchBar value={courseSearch} onChange={setCourseSearch} placeholder={t('admin.courses.searchPlaceholder')} />
                 </div>
                 <div className="card">
                   <Table
-                    cols={['Title', 'Price', 'Lessons', 'Status', 'Created', 'Actions']}
+                    cols={[t('admin.courses.cols.title'), t('admin.courses.cols.price'), t('admin.courses.cols.lessons'), t('admin.courses.cols.status'), t('admin.courses.cols.created'), t('admin.courses.cols.actions')]}
                     rows={filteredCourses.map((c) => [
                       <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{c.title}</span>,
                       Number(c.price) === 0
-                        ? <span className="badge badge-mint">Free</span>
+                        ? <span className="badge badge-mint">{t('common.free')}</span>
                         : <span>${Number(c.price).toFixed(2)}</span>,
                       <span>{c.total_lessons}</span>,
                       <span className={`badge ${c.is_published ? 'badge-mint' : 'badge-neutral'}`}>
-                        {c.is_published ? 'Published' : 'Draft'}
+                        {c.is_published ? t('admin.courses.published') : t('admin.courses.draft')}
                       </span>,
                       <span style={{ color: 'var(--text-3)', fontSize: '.8rem' }}>
-                        {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {new Date(c.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>,
                       <div style={{ display: 'flex', gap: '.375rem' }}>
                         <button className="btn btn-secondary btn-sm" onClick={() => handleTogglePublish(c)}>
-                          {c.is_published ? 'Unpublish' : 'Publish'}
+                          {c.is_published ? t('admin.courses.unpublish') : t('admin.courses.publish')}
                         </button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDeleteCourse(c)}>
-                          Delete
+                          {t('admin.courses.delete')}
                         </button>
                       </div>,
                     ])}
-                    empty="No courses found."
+                    empty={t('admin.courses.noRecords')}
                   />
                 </div>
               </div>
@@ -336,9 +333,9 @@ export default function AdminPanel() {
             {tab === 'cats' && (
               <div>
                 <div className="section-heading">
-                  <h2>Categories <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({cats.length})</span></h2>
+                  <h2>{t('admin.cats.title')} <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({cats.length})</span></h2>
                   <button className="btn btn-primary btn-sm" onClick={() => setShowCatForm((v) => !v)}>
-                    {showCatForm ? 'Cancel' : '+ New Category'}
+                    {showCatForm ? t('admin.cats.cancel') : t('admin.cats.newCategory')}
                   </button>
                 </div>
 
@@ -346,26 +343,26 @@ export default function AdminPanel() {
                   <div className="card" style={{ marginBottom: '1.25rem' }}>
                     <div className="card-body">
                       <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '1.125rem', fontSize: '1rem' }}>
-                        New Category
+                        {t('admin.cats.newCategoryTitle')}
                       </h3>
                       <form onSubmit={handleCreateCat} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: '.75rem', alignItems: 'end' }}>
                         <div className="form-group" style={{ margin: 0 }}>
-                          <label>Name *</label>
+                          <label>{t('admin.cats.nameField')}</label>
                           <input className="input" value={newCat.name} required
                             onChange={(e) => setNewCat({ ...newCat, name: e.target.value,
                               slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} />
                         </div>
                         <div className="form-group" style={{ margin: 0 }}>
-                          <label>Slug *</label>
+                          <label>{t('admin.cats.slugField')}</label>
                           <input className="input" value={newCat.slug} required
                             onChange={(e) => setNewCat({ ...newCat, slug: e.target.value })} />
                         </div>
                         <div className="form-group" style={{ margin: 0 }}>
-                          <label>Description</label>
+                          <label>{t('admin.cats.descriptionField')}</label>
                           <input className="input" value={newCat.description}
                             onChange={(e) => setNewCat({ ...newCat, description: e.target.value })} />
                         </div>
-                        <button type="submit" className="btn btn-primary">Create</button>
+                        <button type="submit" className="btn btn-primary">{t('admin.cats.createBtn')}</button>
                       </form>
                     </div>
                   </div>
@@ -373,14 +370,14 @@ export default function AdminPanel() {
 
                 <div className="card">
                   <Table
-                    cols={['Name', 'Slug', 'Description', 'Actions']}
+                    cols={[t('admin.cats.cols.name'), t('admin.cats.cols.slug'), t('admin.cats.cols.description'), t('admin.cats.cols.actions')]}
                     rows={cats.map((c) => [
                       <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{c.name}</span>,
                       <code style={{ fontSize: '.8rem', background: 'var(--bg-2)', padding: '.15rem .45rem', borderRadius: 4 }}>{c.slug}</code>,
                       <span style={{ color: 'var(--text-3)' }}>{c.description || '—'}</span>,
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDeleteCat(c)}>Delete</button>,
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDeleteCat(c)}>{t('admin.cats.delete')}</button>,
                     ])}
-                    empty="No categories yet."
+                    empty={t('admin.cats.noRecords')}
                   />
                 </div>
               </div>
@@ -390,11 +387,11 @@ export default function AdminPanel() {
             {tab === 'payments' && (
               <div>
                 <div className="section-heading">
-                  <h2>All Payments <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({payments.length})</span></h2>
+                  <h2>{t('admin.payments.title')} <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({payments.length})</span></h2>
                 </div>
                 <div className="card">
                   <Table
-                    cols={['Amount', 'Currency', 'Status', 'Date', 'Payment ID']}
+                    cols={[t('admin.payments.cols.amount'), t('admin.payments.cols.currency'), t('admin.payments.cols.status'), t('admin.payments.cols.date'), t('admin.payments.cols.paymentId')]}
                     rows={payments.map((p) => [
                       <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem' }}>
                         ${Number(p.amount).toFixed(2)}
@@ -407,13 +404,13 @@ export default function AdminPanel() {
                         {p.status}
                       </span>,
                       <span style={{ color: 'var(--text-3)', fontSize: '.8rem' }}>
-                        {new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {new Date(p.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>,
                       <code style={{ fontSize: '.75rem', color: 'var(--text-3)' }}>
                         {p.stripe_payment_intent_id?.slice(0, 20) || '—'}
                       </code>,
                     ])}
-                    empty="No payments yet."
+                    empty={t('admin.payments.noRecords')}
                   />
                 </div>
               </div>

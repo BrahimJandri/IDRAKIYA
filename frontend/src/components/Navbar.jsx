@@ -1,16 +1,22 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { logout as apiLogout } from '../api/auth'
+import { useTranslation } from 'react-i18next'
 
 export default function Navbar() {
   const { user, logout, isInstructor, isAdmin } = useAuth()
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
 
   const handleLogout = async () => {
     const rt = localStorage.getItem('refresh_token')
     if (rt) await apiLogout(rt).catch(() => {})
     logout()
     navigate('/login')
+  }
+
+  const toggleLang = () => {
+    i18n.changeLanguage(i18n.language === 'ar' ? 'fr' : 'ar')
   }
 
   return (
@@ -27,43 +33,42 @@ export default function Navbar() {
 
           <div className="nav-links">
             <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-              Courses
+              {t('nav.courses')}
             </NavLink>
             {user && (
               <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-                My Learning
-              </NavLink>
-            )}
-            {isInstructor && (
-              <NavLink to="/instructor" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-                Teach
+                {t('nav.myLearning')}
               </NavLink>
             )}
             {isAdmin && (
               <NavLink to="/admin" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
                 style={{ color: 'var(--mint)' }}>
-                Admin
+                {t('nav.admin')}
               </NavLink>
             )}
+
+            <div className="nav-sep" />
+
+            <button
+              className="lang-toggle"
+              onClick={toggleLang}
+              title={i18n.language === 'ar' ? 'Français' : 'العربية'}
+            >
+              {i18n.language === 'ar' ? 'FR' : 'ع'}
+            </button>
 
             {user ? (
               <>
                 <div className="nav-sep" />
                 <span className="nav-user">{user.full_name}</span>
                 <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
-                  Sign out
+                  {t('nav.signOut')}
                 </button>
               </>
             ) : (
-              <>
-                <div className="nav-sep" />
-                <NavLink to="/login" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-                  Sign in
-                </NavLink>
-                <Link to="/register" className="btn btn-primary btn-sm">
-                  Get started
-                </Link>
-              </>
+              <Link to="/login" className="btn btn-primary btn-sm">
+                {t('nav.signIn')}
+              </Link>
             )}
           </div>
         </div>

@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import { listCourses, listCategories } from '../api/courses'
 import { useAuth } from '../context/AuthContext'
 import CourseCard from '../components/CourseCard'
+import { useTranslation } from 'react-i18next'
 
 export default function CourseCatalog() {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [courses, setCourses] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -42,15 +44,15 @@ export default function CourseCatalog() {
           ))}
         </div>
         <div className="container page-hero-content">
-          <p className="page-hero-eyebrow">Online Courses</p>
-          <h1>The journey begins<br />with <em>understanding</em></h1>
-          <p>Expert-led courses to elevate your knowledge, logic, and professional skills.</p>
+          <p className="page-hero-eyebrow">{t('catalog.eyebrow')}</p>
+          <h1>
+            {t('catalog.heroTitle')}<br />
+            <em>{t('catalog.heroEmphasis')}</em>
+          </h1>
+          <p>{t('catalog.heroSubtitle')}</p>
           {!user && (
             <div className="page-hero-actions">
-              <Link to="/register" className="btn btn-primary btn-xl">Start learning free</Link>
-              <a href="#courses" className="btn btn-secondary btn-xl" style={{ color: 'rgba(255,255,255,.75)', background: 'rgba(255,255,255,.08)', borderColor: 'rgba(255,255,255,.12)' }}>
-                Browse courses
-              </a>
+              <Link to="/login" className="btn btn-primary btn-xl">{t('nav.signIn')}</Link>
             </div>
           )}
         </div>
@@ -59,31 +61,35 @@ export default function CourseCatalog() {
       {/* Catalog */}
       <div className="container page-body" id="courses">
         <div className="section-heading">
-          <h2>All Courses</h2>
-          {!loading && <span style={{ fontSize: '.875rem', color: 'var(--text-3)', fontWeight: 500 }}>{courses.length} courses</span>}
+          <h2>{t('catalog.allCourses')}</h2>
+          {!loading && (
+            <span style={{ fontSize: '.875rem', color: 'var(--text-3)', fontWeight: 500 }}>
+              {courses.length} {t('common.courses')}
+            </span>
+          )}
         </div>
 
         <div className="filter-bar">
           <input className="input" style={{ flex: 1, minWidth: 180 }}
-            placeholder="Search courses…" value={filters.search}
+            placeholder={t('catalog.searchPlaceholder')} value={filters.search}
             onChange={(e) => set('search', e.target.value)} />
           <select className="input" style={{ minWidth: 150 }}
             value={filters.category} onChange={(e) => set('category', e.target.value)}>
-            <option value="">All categories</option>
+            <option value="">{t('catalog.allCategories')}</option>
             {categories.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
           </select>
           <select className="input" style={{ minWidth: 130 }}
             value={filters.level} onChange={(e) => set('level', e.target.value)}>
-            <option value="">All levels</option>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
+            <option value="">{t('catalog.allLevels')}</option>
+            <option value="beginner">{t('catalog.beginner')}</option>
+            <option value="intermediate">{t('catalog.intermediate')}</option>
+            <option value="advanced">{t('catalog.advanced')}</option>
           </select>
           <select className="input" style={{ minWidth: 110 }}
             value={filters.is_free} onChange={(e) => set('is_free', e.target.value)}>
-            <option value="">Any price</option>
-            <option value="true">Free</option>
-            <option value="false">Paid</option>
+            <option value="">{t('catalog.anyPrice')}</option>
+            <option value="true">{t('catalog.free')}</option>
+            <option value="false">{t('catalog.paid')}</option>
           </select>
         </div>
 
@@ -92,8 +98,8 @@ export default function CourseCatalog() {
         ) : courses.length === 0 ? (
           <div className="empty">
             <div className="empty-icon">🎓</div>
-            <h3>No courses found</h3>
-            <p>Try adjusting the filters or check back later.</p>
+            <h3>{t('catalog.noCoursesTitle')}</h3>
+            <p>{t('catalog.noCoursesSub')}</p>
           </div>
         ) : (
           <div className="grid grid-3">

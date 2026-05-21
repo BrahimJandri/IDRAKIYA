@@ -4,10 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import { myEnrollments } from '../api/enrollments'
 import { myPayments } from '../api/payments'
 import { getSessions, revokeSession, logoutAll, updateMe, changePassword } from '../api/auth'
+import { useTranslation } from 'react-i18next'
 
 export default function StudentDashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
   const [tab, setTab] = useState('learning')
   const [enrollments, setEnrollments] = useState([])
   const [payments, setPayments] = useState([])
@@ -17,6 +19,8 @@ export default function StudentDashboard() {
   const [pwdForm, setPwdForm] = useState({ current_password: '', new_password: '' })
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
+
+  const locale = i18n.language === 'ar' ? 'ar-DZ' : 'fr-FR'
 
   useEffect(() => {
     Promise.all([
@@ -41,29 +45,29 @@ export default function StudentDashboard() {
   }
   const handleProfile = async (e) => {
     e.preventDefault()
-    try { await updateMe(profileForm); flash('Profile updated') }
-    catch (e) { flash(e.response?.data?.detail || 'Update failed', true) }
+    try { await updateMe(profileForm); flash(t('dashboard.profileUpdated')) }
+    catch (e) { flash(e.response?.data?.detail || t('dashboard.updateFailed'), true) }
   }
   const handlePwd = async (e) => {
     e.preventDefault()
     try {
       await changePassword(pwdForm)
-      flash('Password changed — signing out…')
+      flash(t('dashboard.passwordChanged'))
       setTimeout(() => { logout(); navigate('/login') }, 2000)
-    } catch (e) { flash(e.response?.data?.detail || 'Change failed', true) }
+    } catch (e) { flash(e.response?.data?.detail || t('dashboard.changeFailed'), true) }
   }
 
   const TABS = [
-    { key: 'learning', label: 'My courses' },
-    { key: 'payments', label: 'Payments' },
-    { key: 'sessions', label: 'Sessions' },
-    { key: 'profile',  label: 'Profile' },
+    { key: 'learning', label: t('dashboard.tabs.learning') },
+    { key: 'payments', label: t('dashboard.tabs.payments') },
+    { key: 'sessions', label: t('dashboard.tabs.sessions') },
+    { key: 'profile',  label: t('dashboard.tabs.profile') },
   ]
 
   const stats = [
-    { num: enrollments.length, label: 'Enrolled' },
-    { num: enrollments.filter((e) => e.status === 'active' && e.progress_percent > 0).length, label: 'In progress' },
-    { num: enrollments.filter((e) => e.status === 'completed').length, label: 'Completed' },
+    { num: enrollments.length, label: t('dashboard.enrolled') },
+    { num: enrollments.filter((e) => e.status === 'active' && e.progress_percent > 0).length, label: t('dashboard.inProgress') },
+    { num: enrollments.filter((e) => e.status === 'completed').length, label: t('dashboard.completed') },
   ]
 
   return (
@@ -71,8 +75,8 @@ export default function StudentDashboard() {
       {/* Hero */}
       <div className="page-hero">
         <div className="container page-hero-content">
-          <p className="page-hero-eyebrow">Dashboard</p>
-          <h1>Hello, <em>{user?.full_name?.split(' ')[0]}</em> 👋</h1>
+          <p className="page-hero-eyebrow">{t('dashboard.eyebrow')}</p>
+          <h1>{t('dashboard.hello')} <em>{user?.full_name?.split(' ')[0]}</em> 👋</h1>
           <div className="stats-row">
             {stats.map((s) => (
               <div key={s.label} className="stat-item">
@@ -106,16 +110,15 @@ export default function StudentDashboard() {
               !enrollments.length ? (
                 <div className="empty">
                   <div className="empty-icon">📖</div>
-                  <h3>No courses yet</h3>
-                  <p>Enroll in a course to start learning.</p>
-                  <button className="btn btn-primary" onClick={() => navigate('/')}>Browse courses</button>
+                  <h3>{t('dashboard.noCoursesTitle')}</h3>
+                  <p>{t('dashboard.noCoursesSub')}</p>
+                  <button className="btn btn-primary" onClick={() => navigate('/')}>{t('dashboard.browseCourses')}</button>
                 </div>
               ) : (
                 <div className="grid grid-2">
                   {enrollments.map((e) => (
                     <div key={e.id} className="card" style={{ cursor: 'pointer' }}
                       onClick={() => navigate(`/courses/${e.course_id}`)}>
-                      {/* Progress top bar */}
                       <div style={{ height: 3, background: 'var(--bg-2)' }}>
                         <div style={{ height: '100%', width: `${e.progress_percent}%`, background: 'var(--mint)', transition: 'width .5s' }} />
                       </div>
@@ -132,11 +135,11 @@ export default function StudentDashboard() {
                           <div className="progress-fill" style={{ width: `${e.progress_percent}%` }} />
                         </div>
                         <p style={{ fontSize: '.8rem', color: 'var(--text-3)', fontWeight: 500 }}>
-                          Enrolled {new Date(e.enrolled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {t('dashboard.enrolledDate')} {new Date(e.enrolled_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </p>
                         {e.completed_at && (
                           <p style={{ fontSize: '.8rem', color: 'var(--mint)', fontWeight: 600, marginTop: '.25rem' }}>
-                            ✓ Completed {new Date(e.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            {t('dashboard.completedDate')} {new Date(e.completed_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
                           </p>
                         )}
                       </div>
@@ -151,8 +154,8 @@ export default function StudentDashboard() {
               !payments.length ? (
                 <div className="empty">
                   <div className="empty-icon">💳</div>
-                  <h3>No payments yet</h3>
-                  <p>Your purchase history will appear here.</p>
+                  <h3>{t('dashboard.noPaymentsTitle')}</h3>
+                  <p>{t('dashboard.noPaymentsSub')}</p>
                 </div>
               ) : (
                 <div>
@@ -166,7 +169,7 @@ export default function StudentDashboard() {
                           <span style={{ fontWeight: 400, fontSize: '.8125rem', color: 'var(--text-3)', marginLeft: '.375rem' }}>{p.currency}</span>
                         </div>
                         <div style={{ fontSize: '.75rem', color: 'var(--text-3)', fontWeight: 500, marginTop: '.125rem' }}>
-                          {new Date(p.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                          {new Date(p.created_at).toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' })}
                         </div>
                       </div>
                       <span className={`badge ${p.status === 'completed' ? 'badge-mint' : 'badge-neutral'}`}>{p.status}</span>
@@ -180,28 +183,28 @@ export default function StudentDashboard() {
             {tab === 'sessions' && (
               <div>
                 <div className="section-heading">
-                  <h2>Active sessions <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({sessions.length})</span></h2>
-                  <button className="btn btn-danger btn-sm" onClick={handleLogoutAll}>Sign out everywhere</button>
+                  <h2>{t('dashboard.sessions.title')} <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({sessions.length})</span></h2>
+                  <button className="btn btn-danger btn-sm" onClick={handleLogoutAll}>{t('dashboard.sessions.signOutAll')}</button>
                 </div>
-                {!sessions.length && <p style={{ color: 'var(--text-3)', fontSize: '.875rem' }}>No active sessions found.</p>}
+                {!sessions.length && <p style={{ color: 'var(--text-3)', fontSize: '.875rem' }}>{t('dashboard.sessions.noSessions')}</p>}
                 {sessions.map((s) => {
-                  const name = s.device_name || 'Unknown device'
+                  const name = s.device_name || t('dashboard.sessions.unknownDevice')
                   const icon = name.toLowerCase().includes('firefox') ? '🦊'
                     : name.toLowerCase().includes('chrome') ? '🌐'
                     : name.toLowerCase().includes('safari') ? '🧭'
                     : name.toLowerCase().includes('edge') ? '🔷'
                     : s.device_type === 'mobile' ? '📱' : '💻'
-                  const typeLabel = s.device_type === 'mobile' ? 'Mobile' : 'Desktop'
+                  const typeLabel = s.device_type === 'mobile' ? t('dashboard.sessions.mobile') : t('dashboard.sessions.desktop')
                   return (
                     <div key={s.id} className="session-row">
                       <div style={{ fontSize: '1.75rem', lineHeight: 1, flexShrink: 0 }}>{icon}</div>
                       <div className="session-row-info">
                         <div className="session-device">{name}</div>
                         <div className="session-meta">
-                          {typeLabel} · {s.ip_address || 'unknown IP'} · Last active {new Date(s.last_used_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          {typeLabel} · {s.ip_address || 'unknown IP'} · {t('dashboard.sessions.lastActive')} {new Date(s.last_used_at).toLocaleString(locale, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleRevoke(s.id)}>Revoke</button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => handleRevoke(s.id)}>{t('dashboard.sessions.revoke')}</button>
                     </div>
                   )
                 })}
@@ -214,43 +217,43 @@ export default function StudentDashboard() {
                 <div className="card">
                   <div className="card-body">
                     <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '1.25rem', fontSize: '1rem' }}>
-                      Edit profile
+                      {t('dashboard.profile.editTitle')}
                     </h3>
                     <form onSubmit={handleProfile}>
                       <div className="form-group">
-                        <label>Full name</label>
+                        <label>{t('dashboard.profile.fullName')}</label>
                         <input className="input" value={profileForm.full_name}
                           onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })} />
                       </div>
                       <div className="form-group">
-                        <label>Bio</label>
+                        <label>{t('dashboard.profile.bio')}</label>
                         <textarea className="input" rows={4} value={profileForm.bio}
                           onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                          placeholder="Tell us about yourself…" />
+                          placeholder={t('dashboard.profile.bioPlaceholder')} />
                       </div>
-                      <button className="btn btn-primary w-full">Save changes</button>
+                      <button className="btn btn-primary w-full">{t('dashboard.profile.saveChanges')}</button>
                     </form>
                   </div>
                 </div>
                 <div className="card">
                   <div className="card-body">
                     <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '1.25rem', fontSize: '1rem' }}>
-                      Change password
+                      {t('dashboard.profile.changePassword')}
                     </h3>
                     <form onSubmit={handlePwd}>
                       <div className="form-group">
-                        <label>Current password</label>
+                        <label>{t('dashboard.profile.currentPassword')}</label>
                         <input className="input" type="password" value={pwdForm.current_password}
                           onChange={(e) => setPwdForm({ ...pwdForm, current_password: e.target.value })}
                           autoComplete="current-password" />
                       </div>
                       <div className="form-group">
-                        <label>New password</label>
+                        <label>{t('dashboard.profile.newPassword')}</label>
                         <input className="input" type="password" value={pwdForm.new_password} minLength={8}
                           onChange={(e) => setPwdForm({ ...pwdForm, new_password: e.target.value })}
-                          autoComplete="new-password" placeholder="At least 8 characters" />
+                          autoComplete="new-password" placeholder={t('dashboard.profile.newPasswordPlaceholder')} />
                       </div>
-                      <button className="btn btn-dark w-full">Change password</button>
+                      <button className="btn btn-dark w-full">{t('dashboard.profile.changePasswordBtn')}</button>
                     </form>
                   </div>
                 </div>
