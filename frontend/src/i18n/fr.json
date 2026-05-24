@@ -103,6 +103,7 @@
     "submitReview": "Soumettre l'avis",
     "noReviewsTitle": "Pas encore d'avis",
     "noReviewsSub": "Soyez le premier à évaluer ce cours.",
+    "captureBlocked": "La capture d'écran n'est pas autorisée pendant la lecture",
     "enrollToAccess": "Inscrivez-vous pour accéder à cette leçon",
     "enrollmentFailed": "Échec de l'inscription",
     "cannotLoadLesson": "Impossible de charger la leçon",

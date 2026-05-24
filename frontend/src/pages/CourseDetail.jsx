@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getCourse, getLesson } from '../api/courses'
 import { enroll, getEnrollment, updateProgress } from '../api/enrollments'
@@ -23,6 +23,9 @@ export default function CourseDetail() {
   const [review, setReview] = useState({ rating: 5, comment: '' })
   const [reviewSent, setReviewSent] = useState(false)
   const [tab, setTab] = useState('content')
+  const [isCapturing, setIsCapturing] = useState(false)
+  const videoRef = useRef(null)
+  const playerRef = useRef(null)
 
   useEffect(() => {
     setLoading(true)
@@ -69,6 +72,49 @@ export default function CourseDetail() {
       setReviewSent(true)
     } catch (e) { setError(e.response?.data?.detail || t('course.reviewFailed')) }
   }
+
+  // Anti-capture: activate when a lesson video is open
+  useEffect(() => {
+    if (!lessonData?.video_url) return
+
+    // 1. Block screen-share attempts via getDisplayMedia
+    const originalGDM = navigator.mediaDevices?.getDisplayMedia?.bind(navigator.mediaDevices)
+    if (navigator.mediaDevices?.getDisplayMedia) {
+      navigator.mediaDevices.getDisplayMedia = async () => {
+        setIsCapturing(true)
+        if (videoRef.current) videoRef.current.pause()
+        throw new DOMException('Screen capture is not allowed during video playback.', 'NotAllowedError')
+      }
+    }
+
+    // 2. Pause video when tab loses visibility
+    const handleVisibility = () => {
+      if (document.hidden && videoRef.current) videoRef.current.pause()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    // 3. Block screenshot keyboard shortcuts
+    const handleKey = (e) => {
+      if (
+        e.key === 'PrintScreen' ||
+        e.code === 'PrintScreen' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'S' || e.key === 's')) ||
+        (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5')) ||
+        (e.ctrlKey && e.key === 'p')
+      ) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+    document.addEventListener('keydown', handleKey, true)
+
+    return () => {
+      if (originalGDM) navigator.mediaDevices.getDisplayMedia = originalGDM
+      document.removeEventListener('visibilitychange', handleVisibility)
+      document.removeEventListener('keydown', handleKey, true)
+      setIsCapturing(false)
+    }
+  }, [lessonData])
 
   const locale = i18n.language === 'ar' ? 'ar-DZ' : 'fr-FR'
 
@@ -150,7 +196,30 @@ export default function CourseDetail() {
             </div>
             <div className="player-body">
               {lessonData.video_url
-                ? <video controls className="player-video"><source src={lessonData.video_url} /></video>
+                ? (
+                  <div ref={playerRef} style={{ position: 'relative' }}>
+                    <video
+                      ref={videoRef}
+                      controls
+                      className="player-video"
+                      src={lessonData.video_url}
+                      onContextMenu={(e) => e.preventDefault()}
+                    />
+                    <div className="video-watermark" aria-hidden="true">
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <span key={i} className="video-watermark-text">
+                          {user?.full_name || user?.email || 'IDRAKIYA'}
+                        </span>
+                      ))}
+                    </div>
+                    {isCapturing && (
+                      <div className="video-capture-overlay">
+                        <span style={{ fontSize: '2.5rem' }}>🚫</span>
+                        <span>{t('course.captureBlocked')}</span>
+                      </div>
+                    )}
+                  </div>
+                )
                 : <div className="player-blank">
                     <span style={{ fontSize: '2rem' }}>🎬</span>
                     <span>{t('course.noVideo')}</span>
