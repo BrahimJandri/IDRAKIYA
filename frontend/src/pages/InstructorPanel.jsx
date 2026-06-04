@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { listCourses, createCourse, updateCourse, deleteCourse, addChapter, addLesson, listCategories } from '../api/courses'
+import { useEffect, useRef, useState } from 'react'
+import { listCourses, createCourse, updateCourse, deleteCourse, addChapter, addLesson, listCategories, uploadVideo } from '../api/courses'
 import { useTranslation } from 'react-i18next'
 
 function Modal({ title, onClose, children }) {
@@ -32,6 +32,8 @@ export default function InstructorPanel() {
   const [msg, setMsg]   = useState('')
   const [err, setErr]   = useState('')
   const [saving, setSaving] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(null) // null | 0-100
+  const fileInputRef = useRef(null)
 
   const [courseModal,  setCourseModal]  = useState(null)
   const [chapterModal, setChapterModal] = useState(null)
@@ -94,6 +96,20 @@ export default function InstructorPanel() {
       flash(t('instructor.chapterAdded')); setChapterModal(null); setChapterForm(BLANK_CHAPTER)
     } catch (e) { flash(e.response?.data?.detail || t('instructor.failed'), true) }
     finally { setSaving(false) }
+  }
+
+  const handleVideoFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadProgress(0)
+    try {
+      const { data } = await uploadVideo(file, setUploadProgress)
+      setLessonForm((f) => ({ ...f, video_url: data.url }))
+    } catch (err) {
+      flash(err.response?.data?.detail || 'Upload failed', true)
+    } finally {
+      setUploadProgress(null)
+    }
   }
 
   const saveLesson = async (e) => {
@@ -277,7 +293,40 @@ export default function InstructorPanel() {
               <input className="input" value={lessonForm.title} onChange={lf('title')} required />
             </Field>
             <Field label={t('instructor.modal.videoUrlField')}>
-              <input className="input" value={lessonForm.video_url} onChange={lf('video_url')} placeholder="https://…" />
+              <div className="upload-field">
+                <input
+                  className="input"
+                  value={lessonForm.video_url}
+                  onChange={lf('video_url')}
+                  placeholder="https://… or upload below"
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/mp4,video/webm,video/ogg,.mp4,.webm,.ogg,.mov"
+                  style={{ display: 'none' }}
+                  onChange={handleVideoFile}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{ whiteSpace: 'nowrap' }}
+                  disabled={uploadProgress !== null}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {uploadProgress !== null ? `Uploading ${uploadProgress}%` : '📁 Upload file'}
+                </button>
+              </div>
+              {uploadProgress !== null && (
+                <div className="upload-progress-bar">
+                  <div className="upload-progress-fill" style={{ width: `${uploadProgress}%` }} />
+                </div>
+              )}
+              {lessonForm.video_url?.startsWith('/media/') && (
+                <span style={{ fontSize: '.75rem', color: 'var(--mint)', marginTop: '.25rem', display: 'block' }}>
+                  ✓ Video uploaded
+                </span>
+              )}
             </Field>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'.625rem' }}>
               <Field label={t('instructor.modal.durationField')}>

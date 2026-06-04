@@ -242,7 +242,8 @@
       "manageUsers": "👥 Gérer les utilisateurs",
       "manageCourses": "🎓 Gérer les cours",
       "categories": "🏷️ Catégories",
-      "viewPayments": "💳 Voir les paiements"
+      "viewPayments": "💳 Voir les paiements",
+      "instructorPanel": "Panel Instructeur"
     },
     "users": {
       "title": "Utilisateurs",

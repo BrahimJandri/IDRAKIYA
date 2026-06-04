@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   getStats, listUsers, updateUser, deleteUser,
   listAllCourses, adminUpdateCourse, adminDeleteCourse,
@@ -68,6 +69,7 @@ function SearchBar({ value, onChange, placeholder }) {
 
 export default function AdminPanel() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const locale = i18n.language === 'ar' ? 'ar-DZ' : 'fr-FR'
 
   const [tab, setTab]         = useState('stats')
@@ -244,6 +246,9 @@ export default function AdminPanel() {
                       {a.label}
                     </button>
                   ))}
+                  <button className="btn btn-primary" onClick={() => navigate('/instructor')}>
+                    🎬 {t('admin.actions.instructorPanel')}
+                  </button>
                 </div>
               </div>
             )}

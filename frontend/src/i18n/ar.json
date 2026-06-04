@@ -242,7 +242,8 @@
       "manageUsers": "👥 إدارة المستخدمين",
       "manageCourses": "🎓 إدارة الدورات",
       "categories": "🏷️ الفئات",
-      "viewPayments": "💳 عرض المدفوعات"
+      "viewPayments": "💳 عرض المدفوعات",
+      "instructorPanel": "لوحة المدرّس"
     },
     "users": {
       "title": "المستخدمون",

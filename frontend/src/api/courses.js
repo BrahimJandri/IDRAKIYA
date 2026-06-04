@@ -16,3 +16,12 @@ export const addLesson = (courseId, chapterId, data) =>
 
 export const getLesson = (courseId, chapterId, lessonId) =>
   api.get(`/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`)
+
+export const uploadVideo = (file, onProgress) => {
+  const form = new FormData()
+  form.append('file', file)
+  return api.post('/upload/video', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: (e) => onProgress && onProgress(Math.round((e.loaded * 100) / e.total)),
+  })
+}
