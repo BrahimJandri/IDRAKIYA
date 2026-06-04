@@ -1,9 +1,13 @@
+import base64
+import io
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import List
 from uuid import UUID
 
 import httpx
+import pyotp
+import qrcode
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from jose import JWTError
 from sqlalchemy import select, update
@@ -30,6 +34,9 @@ from app.schemas.user import (
     RefreshRequest,
     SessionOut,
     TokenPair,
+    TwoFALoginRequest,
+    TwoFASetupOut,
+    TwoFAVerify,
     UserLogin,
     UserOut,
     UserRegister,
@@ -58,7 +65,7 @@ async def register(payload: UserRegister, db: AsyncSession = Depends(get_db)):
     return user
 
 
-@router.post("/login", response_model=TokenPair)
+@router.post("/login")
 async def login(payload: UserLogin, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == payload.email))
     user: User | None = result.scalar_one_or_none()
@@ -68,35 +75,113 @@ async def login(payload: UserLogin, request: Request, db: AsyncSession = Depends
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account disabled")
 
-    # Enforce single active session — revoke all existing sessions before creating a new one
+    # If 2FA is enabled, return a short-lived temp token instead of full tokens
+    if user.totp_enabled:
+        temp_token = create_access_token(
+            {"sub": str(user.id), "type": "2fa_pending",
+             "dn": payload.device_name, "dt": payload.device_type},
+            expires_delta=timedelta(minutes=5),
+        )
+        return {"requires_2fa": True, "temp_token": temp_token}
+
+    return await _issue_tokens(user, payload.device_name, payload.device_type, request, db)
+
+
+async def _issue_tokens(user: User, device_name, device_type, request: Request, db: AsyncSession) -> TokenPair:
     await db.execute(
         update(UserSession)
         .where(UserSession.user_id == user.id, UserSession.is_active == True)
         .values(is_active=False)
     )
-
     refresh_token = create_refresh_token({"sub": str(user.id)})
     expires_at = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-
     session = UserSession(
         user_id=user.id,
         token_hash=hash_token(refresh_token),
-        device_name=payload.device_name,
-        device_type=payload.device_type,
+        device_name=device_name,
+        device_type=device_type,
         ip_address=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
         expires_at=expires_at,
     )
     db.add(session)
-    await db.flush()  # get session.id assigned
-
-    # Embed session_id so every request can be validated against DB
+    await db.flush()
     access_token = create_access_token({
         "sub": str(user.id),
         "role": user.role,
         "sid": str(session.id),
     })
     return TokenPair(access_token=access_token, refresh_token=refresh_token)
+
+
+@router.post("/2fa/login", response_model=TokenPair)
+async def login_2fa(payload: TwoFALoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    invalid = HTTPException(status_code=401, detail="Invalid or expired token")
+    try:
+        data = decode_token(payload.temp_token)
+        if data.get("type") != "2fa_pending":
+            raise invalid
+        user_id = UUID(data["sub"])
+    except (JWTError, KeyError, ValueError):
+        raise invalid
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user: User | None = result.scalar_one_or_none()
+    if not user or not user.is_active or not user.totp_enabled or not user.totp_secret:
+        raise invalid
+
+    totp = pyotp.TOTP(user.totp_secret)
+    if not totp.verify(payload.code, valid_window=1):
+        raise HTTPException(status_code=401, detail="Invalid 2FA code")
+
+    return await _issue_tokens(user, data.get("dn"), data.get("dt"), request, db)
+
+
+@router.post("/2fa/setup", response_model=TwoFASetupOut)
+async def setup_2fa(current_user: User = Depends(get_current_user)):
+    secret = pyotp.random_base32()
+    totp = pyotp.TOTP(secret)
+    uri = totp.provisioning_uri(name=current_user.email, issuer_name="IDRAKIYA")
+
+    img = qrcode.make(uri)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    # Store the secret temporarily (not enabled yet — confirmed in /2fa/enable)
+    current_user.totp_secret = secret
+    return TwoFASetupOut(otpauth_uri=uri, qr_base64=qr_b64)
+
+
+@router.post("/2fa/enable", response_model=UserOut)
+async def enable_2fa(
+    payload: TwoFAVerify,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not current_user.totp_secret:
+        raise HTTPException(status_code=400, detail="Run /2fa/setup first")
+    totp = pyotp.TOTP(current_user.totp_secret)
+    if not totp.verify(payload.code, valid_window=1):
+        raise HTTPException(status_code=400, detail="Invalid code — try again")
+    current_user.totp_enabled = True
+    return current_user
+
+
+@router.post("/2fa/disable", response_model=UserOut)
+async def disable_2fa(
+    payload: TwoFAVerify,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not current_user.totp_enabled:
+        raise HTTPException(status_code=400, detail="2FA is not enabled")
+    totp = pyotp.TOTP(current_user.totp_secret)
+    if not totp.verify(payload.code, valid_window=1):
+        raise HTTPException(status_code=400, detail="Invalid code")
+    current_user.totp_enabled = False
+    current_user.totp_secret = None
+    return current_user
 
 
 @router.post("/google", response_model=TokenPair)

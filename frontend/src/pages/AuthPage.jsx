@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login as apiLogin, register as apiRegister, googleAuth, getMe } from '../api/auth'
+import { login as apiLogin, register as apiRegister, googleAuth, getMe, login2FA } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 import { getDeviceInfo } from '../api/device'
 import { useTranslation } from 'react-i18next'
@@ -40,6 +40,8 @@ function AuthPageInner() {
   const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
   const [showPwd, setShowPwd] = useState(false)
+  const [twoFA, setTwoFA]     = useState(null)  // { tempToken } when 2FA step needed
+  const [twoFACode, setTwoFACode] = useState('')
 
   const handle = (e) => {
     setError('')
@@ -89,16 +91,23 @@ function AuthPageInner() {
         await apiRegister(form)
       }
 
-      const { data: tokens } = await apiLogin({
+      const { data } = await apiLogin({
         email: form.email,
         password: form.password,
         device_name: deviceName,
         device_type: deviceType,
       })
-      localStorage.setItem('access_token', tokens.access_token)
-      localStorage.setItem('refresh_token', tokens.refresh_token)
+
+      if (data.requires_2fa) {
+        setTwoFA({ tempToken: data.temp_token, deviceName, deviceType })
+        setLoading(false)
+        return
+      }
+
+      localStorage.setItem('access_token', data.access_token)
+      localStorage.setItem('refresh_token', data.refresh_token)
       const { data: user } = await getMe()
-      login(tokens, user)
+      login(data, user)
       navigate('/courses')
     } catch (err) {
       setError(err.response?.data?.detail || (
@@ -108,6 +117,69 @@ function AuthPageInner() {
       setLoading(false)
     }
   }
+
+  const submit2FA = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const { data: tokens } = await login2FA({ temp_token: twoFA.tempToken, code: twoFACode })
+      localStorage.setItem('access_token', tokens.access_token)
+      localStorage.setItem('refresh_token', tokens.refresh_token)
+      const { data: user } = await getMe()
+      login(tokens, user)
+      navigate('/courses')
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Invalid code')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ── 2FA step screen ──
+  if (twoFA) return (
+    <div className="auth-layout">
+      <div className="auth-form-panel">
+        <div className="auth-form-inner">
+          <div className="auth-form-head" style={{ marginBottom: '1.5rem' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '.5rem' }}>🔐</div>
+            <h2>Two-Factor Authentication</h2>
+            <p className="subtitle">Enter the 6-digit code from your authenticator app.</p>
+          </div>
+          {error && <div className="alert alert-error">{error}</div>}
+          <form onSubmit={submit2FA}>
+            <div className="form-group">
+              <label>Authentication Code</label>
+              <input
+                className="input"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="000000"
+                value={twoFACode}
+                onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ''))}
+                autoFocus
+                style={{ letterSpacing: '0.4em', fontSize: '1.5rem', textAlign: 'center' }}
+              />
+            </div>
+            <button className="btn-auth-submit" disabled={loading || twoFACode.length !== 6}>
+              {loading ? 'Verifying…' : 'Verify'}
+            </button>
+          </form>
+          <p className="auth-footer-link" style={{ marginTop: '1rem' }}>
+            <button className="auth-switch-btn" onClick={() => { setTwoFA(null); setTwoFACode(''); setError('') }}>
+              ← Back to login
+            </button>
+          </p>
+        </div>
+      </div>
+      <div className="auth-brand-panel">
+        <div className="auth-brand-inner">
+          <h1 className="auth-brand-heading">{t('login.heroTitle')}</h1>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="auth-layout">

@@ -61,6 +61,17 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class TwoFAVerify(BaseModel):
+    code: str
+
+class TwoFALoginRequest(BaseModel):
+    temp_token: str
+    code: str
+
+class TwoFASetupOut(BaseModel):
+    otpauth_uri: str
+    qr_base64: str
+
 class GoogleAuthPayload(BaseModel):
     access_token: str
     device_name: Optional[str] = None

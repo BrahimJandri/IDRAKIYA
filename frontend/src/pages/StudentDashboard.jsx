@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { myEnrollments } from '../api/enrollments'
 import { myPayments } from '../api/payments'
-import { getSessions, revokeSession, logoutAll, updateMe, changePassword } from '../api/auth'
+import { getSessions, revokeSession, logoutAll, updateMe, changePassword, setup2FA, enable2FA, disable2FA } from '../api/auth'
 import { useTranslation } from 'react-i18next'
 
 export default function StudentDashboard() {
@@ -18,6 +18,10 @@ export default function StudentDashboard() {
   const [profileForm, setProfileForm] = useState({ full_name: user?.full_name || '', bio: user?.bio || '' })
   const [pwdForm, setPwdForm] = useState({ current_password: '', new_password: '' })
   const [msg, setMsg] = useState('')
+  const [twoFAState, setTwoFAState] = useState(null) // null | 'setup' | 'disable'
+  const [twoFAQR, setTwoFAQR] = useState(null)       // { qr_base64, otpauth_uri }
+  const [twoFACode, setTwoFACode] = useState('')
+  const [twoFAEnabled, setTwoFAEnabled] = useState(user?.totp_enabled || false)
   const [err, setErr] = useState('')
 
   const locale = i18n.language === 'ar' ? 'ar-DZ' : 'fr-FR'
@@ -55,6 +59,36 @@ export default function StudentDashboard() {
       flash(t('dashboard.passwordChanged'))
       setTimeout(() => { logout(); navigate('/login') }, 2000)
     } catch (e) { flash(e.response?.data?.detail || t('dashboard.changeFailed'), true) }
+  }
+
+  const startSetup2FA = async () => {
+    try {
+      const { data } = await setup2FA()
+      setTwoFAQR(data)
+      setTwoFAState('setup')
+      setTwoFACode('')
+    } catch (e) { flash(e.response?.data?.detail || 'Failed to start 2FA setup', true) }
+  }
+
+  const confirmEnable2FA = async (e) => {
+    e.preventDefault()
+    try {
+      await enable2FA(twoFACode)
+      setTwoFAEnabled(true)
+      setTwoFAState(null)
+      setTwoFAQR(null)
+      flash('Two-factor authentication enabled!')
+    } catch (e) { flash(e.response?.data?.detail || 'Invalid code', true) }
+  }
+
+  const confirmDisable2FA = async (e) => {
+    e.preventDefault()
+    try {
+      await disable2FA(twoFACode)
+      setTwoFAEnabled(false)
+      setTwoFAState(null)
+      flash('Two-factor authentication disabled.')
+    } catch (e) { flash(e.response?.data?.detail || 'Invalid code', true) }
   }
 
   const TABS = [
@@ -255,6 +289,91 @@ export default function StudentDashboard() {
                       </div>
                       <button className="btn btn-dark w-full">{t('dashboard.profile.changePasswordBtn')}</button>
                     </form>
+                  </div>
+                </div>
+
+                {/* 2FA card */}
+                <div className="card" style={{ gridColumn: '1 / -1' }}>
+                  <div className="card-body">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div>
+                        <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', marginBottom: '.25rem' }}>
+                          🔐 Two-Factor Authentication
+                        </h3>
+                        <p style={{ fontSize: '.875rem', color: 'var(--text-3)' }}>
+                          {twoFAEnabled
+                            ? 'Your account is protected with an authenticator app.'
+                            : 'Add an extra layer of security using Google Authenticator or Authy.'}
+                        </p>
+                      </div>
+                      {twoFAState === null && (
+                        twoFAEnabled
+                          ? <button className="btn btn-danger btn-sm" onClick={() => { setTwoFAState('disable'); setTwoFACode('') }}>Disable 2FA</button>
+                          : <button className="btn btn-primary btn-sm" onClick={startSetup2FA}>Enable 2FA</button>
+                      )}
+                    </div>
+
+                    {/* Setup: show QR + confirm code */}
+                    {twoFAState === 'setup' && twoFAQR && (
+                      <div style={{ marginTop: '1.5rem', display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                        <div>
+                          <p style={{ fontSize: '.8125rem', color: 'var(--text-3)', marginBottom: '.75rem' }}>
+                            Scan this QR code with <strong>Google Authenticator</strong> or <strong>Authy</strong>:
+                          </p>
+                          <img
+                            src={`data:image/png;base64,${twoFAQR.qr_base64}`}
+                            alt="2FA QR Code"
+                            style={{ width: 160, height: 160, border: '4px solid var(--border)', borderRadius: 8 }}
+                          />
+                        </div>
+                        <form onSubmit={confirmEnable2FA} style={{ flex: 1, minWidth: 220 }}>
+                          <p style={{ fontSize: '.8125rem', color: 'var(--text-3)', marginBottom: '.75rem' }}>
+                            Then enter the 6-digit code to confirm:
+                          </p>
+                          <div className="form-group">
+                            <input
+                              className="input"
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={6}
+                              placeholder="000000"
+                              value={twoFACode}
+                              onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ''))}
+                              style={{ letterSpacing: '0.3em', fontSize: '1.25rem', textAlign: 'center' }}
+                              autoFocus
+                            />
+                          </div>
+                          <div style={{ display: 'flex', gap: '.5rem' }}>
+                            <button className="btn btn-primary" disabled={twoFACode.length !== 6}>Confirm & Enable</button>
+                            <button type="button" className="btn btn-secondary" onClick={() => { setTwoFAState(null); setTwoFAQR(null) }}>Cancel</button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    {/* Disable: confirm code */}
+                    {twoFAState === 'disable' && (
+                      <form onSubmit={confirmDisable2FA} style={{ marginTop: '1.25rem', maxWidth: 280 }}>
+                        <div className="form-group">
+                          <label style={{ fontSize: '.875rem' }}>Enter your current authenticator code to disable:</label>
+                          <input
+                            className="input"
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            placeholder="000000"
+                            value={twoFACode}
+                            onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ''))}
+                            style={{ letterSpacing: '0.3em', fontSize: '1.25rem', textAlign: 'center' }}
+                            autoFocus
+                          />
+                        </div>
+                        <div style={{ display: 'flex', gap: '.5rem' }}>
+                          <button className="btn btn-danger" disabled={twoFACode.length !== 6}>Confirm Disable</button>
+                          <button type="button" className="btn btn-secondary" onClick={() => setTwoFAState(null)}>Cancel</button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 </div>
               </div>
