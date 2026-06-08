@@ -2151,3 +2151,724 @@ select.input { cursor: pointer; }
   .btn-xl { padding: .75rem 1.5rem; font-size: .9375rem; }
   .auth-tabs { font-size: .8125rem; }
 }
+
+
+
+
+
+/* ════════════════════════════════════════
+   IDRAKIYA — FIGMA AUTH PAGE
+   Figma frame: 1080px. Web scale: 600/1080 = 0.5556
+══════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'VEXA';
+  src: url('/fonts/VEXA-light.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.idrak-page {
+  min-height: 100vh;
+  background: #00120E;
+  font-family: 'VEXA', 'Cairo', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Inner container ── */
+.idrak-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+/* ════ HEADER (absolute-positioned, matches Figma exactly) ════
+   Figma header height: ~215px → scaled: 120px
+   All positions: Figma_px × 0.5556
+*/
+.idrak-header {
+  position: relative;
+  width: 100%;
+  height: 120px;       /* (186+27) * 0.5556 ≈ 119px */
+  overflow: visible;   /* logo overflows top */
+  margin-bottom: 0;
+}
+
+/* bg-top: Figma 1090×363 at (0, -111) */
+.idrak-bg-top {
+  position: absolute;
+  width: 100%;
+  height: 202px;       /* 363 * 0.5556 */
+  top: -62px;          /* -111 * 0.5556 */
+  left: 0;
+  object-fit: cover;
+  object-position: center top;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glow top-right: Figma 1200×1200 at (429, 213) */
+.idrak-glow-tr {
+  position: absolute;
+  width: 667px;        /* 1200 * 0.5556 */
+  height: 667px;
+  left: 239px;         /* 429 * 0.5556 */
+  top: 118px;          /* 213 * 0.5556 */
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.8;
+}
+
+/* IDRAKIA-01 watermark behind logo: Figma 454×321 at (-23, -39), opacity 0.13 */
+.idrak-wm-logo {
+  position: absolute;
+  width: 252px;        /* 454 * 0.5556 */
+  height: 178px;       /* 321 * 0.5556 */
+  left: -13px;         /* -23 * 0.5556 */
+  top: -22px;          /* -39 * 0.5556 */
+  opacity: 0.13;
+  pointer-events: none;
+  z-index: 1;
+  object-fit: contain;
+}
+
+/* Main logo: same position as IDRAKIA-01 (it IS the logo) */
+.idrak-logo {
+  position: absolute;
+  width: 252px;        /* 454 * 0.5556 */
+  height: 178px;       /* 321 * 0.5556 */
+  left: -13px;
+  top: -22px;
+  object-fit: contain;
+  object-position: left top;
+  z-index: 2;
+}
+
+/* Tagline pill: Figma 729×67 at (415, 78)
+   = left: 231px, top: 43px, width: 405px, height: 37px */
+.idrak-tagline-pill {
+  position: absolute;
+  left: 231px;
+  top: 43px;
+  width: calc(100% - 231px);  /* fills remaining right space */
+  height: 37px;
+  background: linear-gradient(90deg, rgba(44,193,148,0.38) 0%, rgba(7,221,133,0) 100%);
+  box-shadow: 7px 22px 58px -10px #014636;
+  border-radius: 24px;         /* 43 * 0.5556 */
+  display: flex;
+  align-items: center;
+  padding-left: 9px;           /* (431-415) * 0.5556 */
+  z-index: 3;
+}
+.idrak-tagline-txt {
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.75rem, 2.2vw, 1.05rem);
+  color: #fff;
+  white-space: nowrap;
+  letter-spacing: 0.06em;
+  direction: rtl;
+}
+
+/* Auth pills: Figma 141×27 at (57,186) and (209,186)
+   Scaled: 78×15 at (32,103) and (116,103) */
+.idrak-auth-pills {
+  position: absolute;
+  left: 32px;          /* 57 * 0.5556 */
+  top: 103px;          /* 186 * 0.5556 */
+  display: flex;
+  gap: 8px;
+  z-index: 3;
+}
+.idrak-auth-pill {
+  background: rgba(216,255,243,0.19);
+  border: 1px solid rgba(216,255,243,0.3);
+  border-radius: 20px;         /* 37 * 0.5556 */
+  width: 78px;                 /* 141 * 0.5556 */
+  height: 15px;                /* 27 * 0.5556 */
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.65rem;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  direction: rtl;
+}
+.idrak-auth-pill.active {
+  background: rgba(44,193,148,0.3);
+  color: #2CC194;
+}
+
+/* ── Global glow blobs ── */
+.idrak-glow-card-l,
+.idrak-glow-card-r {
+  position: absolute;
+  width: 264px; height: 264px;
+  pointer-events: none; z-index: 0;
+}
+.idrak-glow-card-l { left: calc(50% - 332px); top: 420px; }
+.idrak-glow-card-r { left: calc(50% + 36px);  top: 420px; }
+.idrak-glow-form-l,
+.idrak-glow-form-r {
+  position: absolute;
+  width: 667px; height: 667px;
+  pointer-events: none; z-index: 0; opacity: 0.6;
+}
+.idrak-glow-form-l { left: -327px; bottom: 80px; }
+.idrak-glow-form-r { right: -200px; top: 120px; }
+.idrak-watermark-r {
+  position: absolute;
+  width: 483px; height: 402px;
+  right: -280px; top: 162px;
+  opacity: 0.13; pointer-events: none; z-index: 0;
+  transform: rotate(-180deg);
+}
+
+/* ── Nav ── */
+.idrak-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  direction: ltr;
+  margin-bottom: 1rem;
+}
+.idrak-contact-btn {
+  background: rgba(1,70,54,0.2);
+  border: 2px solid #014636;
+  border-radius: 82px;
+  padding: 0.25rem 0.875rem;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.8rem;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.idrak-contact-btn:hover { background: rgba(1,70,54,0.45); }
+.idrak-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  direction: rtl;
+}
+.idrak-nl {
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.8125rem;
+  color: #fff;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.15s;
+}
+.idrak-nl:hover { color: #2CC194; }
+.idrak-nl-active { color: #2CC194; }
+.idrak-nl-underline {
+  display: block;
+  position: absolute;
+  bottom: -3px; left: 0; right: 0;
+  height: 2px; background: #35C499; border-radius: 1px;
+}
+
+/* ── Hero row ── */
+.idrak-hero-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.idrak-accent-line { flex-shrink: 0; width: 77px; height: 17px; }
+.idrak-accent-l { background: linear-gradient(90deg, #2CC194 0%, rgba(44,193,148,0) 100%); }
+.idrak-accent-r { background: linear-gradient(270deg, #00DF83 0%, rgba(0,223,131,0) 100%); }
+.idrak-hero {
+  flex: 1;
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+  font-weight: 400;
+  color: #D3FFF2;
+  text-align: center;
+  line-height: 1.5;
+  direction: rtl;
+  padding: 0 0.5rem;
+}
+
+/* ── Cards ── */
+.idrak-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  padding: 0 1rem;
+  margin-bottom: 0.625rem;
+  direction: ltr;
+}
+.idrak-card-outer {
+  border-radius: 13px;
+  padding-bottom: 0.875rem;
+  position: relative;
+  overflow: visible;
+}
+.idrak-card-outer-mint { background: linear-gradient(0deg, rgba(129,255,217,0.084) 0%, rgba(44,193,148,0.2) 100%); }
+.idrak-card-outer-green { background: linear-gradient(0deg, rgba(129,255,217,0.084) 0%, rgba(0,223,131,0.2) 100%); }
+.idrak-card-inner {
+  border-radius: 21px;
+  height: 210px;
+  position: relative;
+  overflow: hidden;
+  margin: 8px 8px 0;
+}
+.idrak-card-mint  { background: #2CC194; }
+.idrak-card-green { background: #00DF83; }
+.idrak-card-img-girl {
+  position: absolute;
+  height: 240px; width: auto;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  object-fit: cover; object-position: top center;
+}
+.idrak-card-img-boy {
+  position: absolute;
+  height: 230px; width: auto;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  object-fit: cover; object-position: top center;
+}
+.idrak-card-label {
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.7rem;
+  color: #D3FFF2;
+  text-align: center;
+  padding: 0.5rem 0.5rem 0;
+  line-height: 1.5;
+  direction: rtl;
+}
+
+/* ── CTA buttons ── */
+.idrak-cta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  padding: 0 1rem;
+  margin-bottom: 1.5rem;
+  direction: ltr;
+}
+.idrak-cta-btn {
+  background: #014636;
+  border: 2px solid #014636;
+  border-radius: 82px;
+  padding: 0.5rem 0.75rem;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.8125rem;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+  direction: rtl;
+  transition: background 0.15s, transform 0.1s;
+}
+.idrak-cta-btn:hover { background: #025a46; transform: translateY(-1px); }
+
+/* ── Welcome row ── */
+.idrak-welcome-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.875rem;
+}
+.idrak-wline { flex-shrink: 0; width: 77px; height: 17px; }
+.idrak-wline-l { background: linear-gradient(90deg, #2CC194 0%, rgba(44,193,148,0) 100%); }
+.idrak-wline-r { background: linear-gradient(270deg, #00DF83 0%, rgba(0,223,131,0) 100%); }
+.idrak-welcome-txt {
+  flex: 1;
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+  font-weight: 400;
+  color: #D3FFF2;
+  text-align: center;
+  white-space: nowrap;
+  direction: rtl;
+}
+
+/* ── Form card ── */
+.idrak-form-wrap { padding: 0 1rem; }
+.idrak-form-card {
+  background: rgba(1,70,54,0.24);
+  border: 1px solid rgba(44,193,148,0.15);
+  border-radius: 29px;
+  padding: 1.25rem 1.5rem 1.75rem;
+  backdrop-filter: blur(16px);
+}
+.idrak-form-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  direction: rtl;
+}
+.idrak-ftab {
+  background: none; border: none;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.9375rem;
+  color: #014636;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.idrak-ftab-active   { color: #2CC194 !important; }
+.idrak-ftab-inactive { color: #014636; }
+.idrak-ftab-sep {
+  width: 2px; height: 34px;
+  background: #014636;
+  border-radius: 1px; flex-shrink: 0;
+}
+.idrak-field { position: relative; margin-bottom: 0.75rem; }
+.idrak-input {
+  width: 100%;
+  background: rgba(129,255,217,0.16);
+  border: none;
+  border-radius: 17px;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.875rem;
+  color: #2CC194;
+  outline: none;
+  text-align: right;
+  direction: rtl;
+  transition: background 0.15s;
+}
+.idrak-input::placeholder { color: #2CC194; opacity: 0.75; }
+.idrak-input:focus { background: rgba(129,255,217,0.24); }
+.idrak-field-icon-img {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px; height: 20px;
+  object-fit: contain;
+  pointer-events: none;
+}
+.idrak-forgot {
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.75rem;
+  color: #2CC194;
+  text-align: left;
+  margin-bottom: 0.875rem;
+  cursor: pointer;
+  direction: rtl;
+}
+.idrak-submit-btn {
+  display: block;
+  width: 57%;
+  margin: 0 auto;
+  background: rgba(1,70,54,0.2);
+  border: 2px solid #014636;
+  border-radius: 82px;
+  padding: 0.55rem 1rem;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.875rem;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+  direction: rtl;
+  transition: background 0.15s, transform 0.1s;
+}
+.idrak-submit-btn:hover:not(:disabled) { background: #025a46; transform: translateY(-1px); }
+.idrak-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.idrak-or-divider {
+  text-align: center; margin: 0.75rem 0; position: relative;
+}
+.idrak-or-divider::before {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0;
+  height: 1px; background: rgba(44,193,148,0.2);
+}
+.idrak-or-divider span {
+  position: relative; background: rgba(1,35,20,0.9);
+  padding: 0 0.5rem;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.8rem; color: rgba(255,255,255,0.45);
+}
+.idrak-google-btn {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 82px;
+  padding: 0.6rem 1rem;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.875rem; color: #fff;
+  cursor: pointer; transition: background 0.15s; direction: rtl;
+}
+.idrak-google-btn:hover:not(:disabled) { background: rgba(255,255,255,0.11); }
+.idrak-google-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.idrak-error {
+  background: rgba(220,38,38,0.14);
+  border: 1px solid rgba(220,38,38,0.28);
+  border-radius: 10px;
+  padding: 0.5rem 0.875rem;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.8rem; color: #fca5a5;
+  margin-bottom: 0.875rem;
+  text-align: right; direction: rtl;
+}
+
+/* ── 2FA ── */
+.idrak-2fa-center {
+  position: relative; z-index: 1;
+  max-width: 420px; margin: auto;
+  text-align: center; padding: 4rem 2rem;
+}
+.idrak-2fa-logo { height: 72px; margin-bottom: 1rem; }
+.idrak-2fa-title { font-family:'VEXA',sans-serif; font-size:1.5rem; color:#D3FFF2; font-weight:400; margin-bottom:.5rem; direction:rtl; }
+.idrak-2fa-sub   { font-family:'VEXA',sans-serif; font-size:.9375rem; color:rgba(255,255,255,.5); margin-bottom:1.5rem; direction:rtl; }
+.idrak-code-input {
+  width:100%; background:rgba(129,255,217,.16); border:none; border-radius:17px;
+  padding:1rem; font-size:1.75rem; letter-spacing:.5em; text-align:center;
+  color:#fff; outline:none; margin-bottom:1rem; font-variant-numeric:tabular-nums;
+}
+.idrak-code-input::placeholder { color:rgba(44,193,148,.45); }
+.idrak-back-btn {
+  background:none; border:none; color:rgba(255,255,255,.45);
+  font-family:'VEXA',sans-serif; font-size:.875rem; cursor:pointer;
+  margin-top:.75rem; transition:color .15s;
+}
+.idrak-back-btn:hover { color:#2CC194; }
+
+/* ── Mobile Responsive ── */
+@media (max-width: 480px) {
+  .idrak-inner { max-width: 100%; }
+  .idrak-tagline-pill { left: 200px; }
+  .idrak-submit-btn { width: 80%; }
+}
+
+/* ════════════════════════════════════════
+   IDRAKIYA AUTH PAGE — DESKTOP (≥ 1024px)
+   Truly full-width, single-column layout
+══════════════════════════════════════════ */
+
+@media (min-width: 1024px) {
+
+  /* ── Container: no max-width, no padding — sections handle their own ── */
+  .idrak-inner {
+    max-width: 100%;
+    display: block;
+    padding: 0 0 6rem;
+  }
+
+  /* ══════════════════════════════════════
+     HEADER — full screen width, keeps
+     absolute-positioned children like
+     the Figma design (logo RIGHT,
+     tagline LEFT, auth pills bottom-left)
+  ══════════════════════════════════════ */
+  .idrak-header {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    overflow: hidden;        /* clip bg so it doesn't bleed into nav */
+    display: block;          /* keep absolute children */
+  }
+
+  /* Background image: full-width, contained within header */
+  .idrak-bg-top {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  /* Logo → LEFT side, top of auth pills */
+  .idrak-logo {
+    position: absolute;
+    left:      3rem;
+    right:     auto;
+    top:       -50px;
+    transform: none;
+    width:     auto;
+    height:    200px;   /* larger logo */
+    z-index:   2;
+  }
+
+  /* Auth pills → LEFT side, below logo */
+  .idrak-auth-pills {
+    position: absolute;
+    left:   3rem;
+    right:  auto;
+    top:    auto;
+    bottom: 18px;
+    gap:    10px;
+    z-index: 3;
+  }
+
+  .idrak-auth-pill {
+    width:  140px;
+    height: 36px;
+    font-size: 0.8125rem;
+  }
+
+  /* Tagline pill → RIGHT side, aligned to top with logo
+     gradient left (opaque) → right (transparent)  */
+  .idrak-tagline-pill {
+    position:  absolute;
+    left:      38%;
+    right:     3rem;
+    top:       24px;
+    transform: none;
+    width:     auto;
+    height:    54px;
+    border-radius: 30px;
+    background: linear-gradient(90deg, rgba(44,193,148,0.38) 0%, rgba(7,221,133,0) 100%);
+    padding-left:  2rem;
+    padding-right: 0;
+    justify-content: flex-start;
+    z-index: 3;
+  }
+
+  .idrak-tagline-txt {
+    font-size: 1.3rem;
+    letter-spacing: 0.07em;
+  }
+
+  /* ══════════════════════════════════════
+     NAV — full-width, RTL, wider gaps
+  ══════════════════════════════════════ */
+  .idrak-nav {
+    padding: 0.875rem 3rem;
+    margin-bottom: 1.5rem;
+    border-top:    1px solid rgba(44,193,148,0.15);
+    border-bottom: 1px solid rgba(44,193,148,0.08);
+  }
+
+  .idrak-nav-links { gap: 3rem; }
+  .idrak-nl        { font-size: 1rem; }
+
+  .idrak-contact-btn {
+    font-size: 0.9rem;
+    padding: 0.45rem 1.75rem;
+  }
+
+  /* ══════════════════════════════════════
+     HERO
+  ══════════════════════════════════════ */
+  .idrak-hero-row    { padding: 0 3rem; margin-bottom: 2rem; }
+  .idrak-hero        { font-size: 1.75rem; }
+  .idrak-accent-line { width: 130px; height: 22px; }
+
+  /* ══════════════════════════════════════
+     CARDS — large portrait, Figma-style
+  ══════════════════════════════════════ */
+  .idrak-cards-row {
+    direction: ltr;
+    padding: 0 1rem;
+    gap: 2.5rem;
+    margin: 90px auto 1.5rem;  /* top room for heads overflowing boxes */
+    max-width: 1040px;         /* Figma-like contained width */
+  }
+
+  .idrak-card-outer {
+    border-radius: 24px;
+    padding-bottom: 1.25rem;
+    overflow: visible;         /* let the person poke out the top */
+  }
+
+  /* Green box — portrait, smaller than the frame; person overflows top */
+  .idrak-card-inner {
+    height: 380px;
+    border-radius: 24px;
+    margin: 12px 22px 0;       /* thinner frame around the green box */
+    overflow: visible;         /* head sticks out above the box */
+  }
+
+  /* Person images: anchored to the box bottom, taller than the box
+     so only the head / upper body overflows the top edge.        */
+  .idrak-card-img-girl,
+  .idrak-card-img-boy {
+    top: auto;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    object-position: bottom center;
+  }
+  .idrak-card-img-girl { height: 490px; }
+  .idrak-card-img-boy  { height: 490px; }
+
+  .idrak-card-label {
+    font-size: 1rem;
+    padding: 1.25rem 1rem 0;
+    line-height: 1.6;
+  }
+
+  /* ══════════════════════════════════════
+     CTA BUTTONS
+  ══════════════════════════════════════ */
+  .idrak-cta-row {
+    direction: ltr;
+    padding: 0 1rem;
+    gap: 2.5rem;
+    margin: 0 auto 2.5rem;
+    max-width: 1040px;
+  }
+
+  .idrak-cta-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 100px;
+  }
+
+  /* ══════════════════════════════════════
+     WELCOME + FORM
+  ══════════════════════════════════════ */
+  .idrak-welcome-row {
+    padding: 0 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .idrak-welcome-txt { font-size: 1.5rem; }
+  .idrak-wline       { width: 120px; height: 20px; }
+
+  .idrak-form-wrap {
+    padding: 0;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .idrak-form-card {
+    padding: 2rem 2.5rem 2.75rem;
+    border-radius: 32px;
+  }
+
+  .idrak-form-tabs { margin-bottom: 1.5rem; gap: 1.5rem; }
+  .idrak-ftab      { font-size: 1.0625rem; }
+  .idrak-ftab-sep  { height: 40px; }
+
+  .idrak-field { margin-bottom: 1.125rem; }
+
+  .idrak-input {
+    border-radius: 20px;
+    padding: 0.875rem 1rem 0.875rem 3.25rem;
+    font-size: 1rem;
+  }
+
+  .idrak-field-icon-img {
+    width:  24px;
+    height: 24px;
+    left:   0.875rem;
+  }
+
+  .idrak-forgot { font-size: 0.875rem; margin-bottom: 1.25rem; }
+
+  .idrak-submit-btn {
+    width: 52%;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .idrak-google-btn {
+    padding: 0.8125rem 1rem;
+    font-size: 1rem;
+  }
+
+  .idrak-error { font-size: 0.875rem; padding: 0.625rem 1rem; }
+}
