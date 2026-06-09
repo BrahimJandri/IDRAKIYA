@@ -156,7 +156,7 @@ function AuthPageInner() {
               <span className="idrak-nl-underline" />
             </a>
             <a href="/courses" className="idrak-nl">الـدورات</a>
-            <a href="#" className="idrak-nl">احجز موعداً</a>
+            <a href="/appointment" className="idrak-nl">احجز موعداً</a>
             <a href="#" className="idrak-nl">من نحن</a>
           </div>
         </nav>
@@ -192,7 +192,7 @@ function AuthPageInner() {
           <button className="idrak-cta-btn" onClick={() => document.getElementById('idrak-form').scrollIntoView({ behavior: 'smooth' })}>
             ادخل إلى حسابي
           </button>
-          <button className="idrak-cta-btn">احجز موعـداً</button>
+          <button className="idrak-cta-btn" onClick={() => navigate('/appointment')}>احجز موعـداً</button>
         </div>
 
         {/* ── 7. Welcome heading ── */}

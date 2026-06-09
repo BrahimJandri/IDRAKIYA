@@ -2886,3 +2886,279 @@ select.input { cursor: pointer; }
 
   .idrak-error { font-size: 0.875rem; padding: 0.625rem 1rem; }
 }
+
+
+/* ════════════════════════════════════════
+   IDRAKIYA — BOOK APPOINTMENT PAGE
+   (mobile-first; desktop overrides below)
+══════════════════════════════════════════ */
+
+/* ── Intro: text + child image ── */
+.idrak-appt-intro {
+  padding: 0 1rem;
+  margin: 2.5rem 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+}
+.idrak-appt-intro-text { text-align: right; direction: rtl; }
+.idrak-appt-q {
+  font-family: 'VEXA', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.1rem, 4.5vw, 1.4rem);
+  color: #fff;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+}
+.idrak-appt-q-em { color: #2CC194; }
+.idrak-appt-cta {
+  display: inline-block;
+  width: auto;
+  padding: 0.6rem 2rem;
+  /* Figma Rectangle 34/42: translucent pill + soft shadow */
+  background: rgba(1,70,54,0.2);
+  border: 2px solid #014636;
+  border-radius: 45px;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+}
+.idrak-appt-cta:hover { background: rgba(1,70,54,0.45); }
+
+/* Child image card */
+.idrak-appt-childcard {
+  position: relative;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(2,172,133,0.18) 0%, rgba(1,70,54,0.30) 100%);
+  border: 1px solid rgba(44,193,148,0.18);
+  min-height: 230px;
+  margin-top: 40px;          /* room for the child overflowing the top */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+}
+.idrak-appt-child-img {
+  position: relative;
+  z-index: 2;
+  max-width: 92%;
+  height: 290px;
+  object-fit: contain;
+  object-position: bottom center;
+  margin-top: -40px;
+}
+.idrak-appt-letter {
+  position: absolute;
+  font-family: 'VEXA', sans-serif;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 1;
+  line-height: 1;
+}
+.idrak-appt-letter-a   { top: 14px;  right: 18%; font-size: 2.6rem; color: rgba(7,221,133,0.30); }
+.idrak-appt-letter-b   { top: 64px;  right: 30%; font-size: 2.2rem; color: rgba(216,255,243,0.20); }
+.idrak-appt-letter-c   { top: 34px;  right: 8%;  font-size: 2.2rem; color: rgba(129,255,217,0.45); filter: blur(1px); }
+.idrak-appt-letter-ar1 { top: 90px;  right: 40%; font-size: 2.4rem; color: rgba(44,193,148,0.28); }
+.idrak-appt-letter-ar2 { top: 130px; right: 24%; font-size: 2.6rem; color: rgba(129,255,217,0.40); }
+
+/* ── Specialist card + CTA ── */
+.idrak-appt-specialist {
+  padding: 0 1rem;
+  margin-bottom: 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+.idrak-appt-card {
+  background: rgba(1,70,54,0.24);
+  border: 1px solid rgba(44,193,148,0.15);
+  border-radius: 26px;
+  padding: 1.25rem;
+}
+.idrak-appt-card-hd {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  direction: rtl;
+  color: #fff;
+  font-family: 'VEXA', sans-serif;
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
+}
+.idrak-appt-card-hd-icon { width: 26px; height: 26px; color: #fff; flex-shrink: 0; }
+.idrak-appt-card-body {
+  display: flex;
+  flex-direction: row;
+  direction: ltr;          /* photo left, rows right */
+  gap: 1rem;
+  align-items: stretch;
+}
+.idrak-appt-photo {
+  flex-shrink: 0;
+  width: 96px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #02AC85 0%, #014636 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.idrak-appt-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+.idrak-appt-rows {
+  list-style: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.idrak-appt-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  direction: rtl;
+  background: rgba(1,70,54,0.30);
+  border-radius: 30px;
+  padding: 0.4rem 0.8rem;
+}
+.idrak-appt-row-icon { width: 17px; height: 17px; color: #fff; flex-shrink: 0; }
+.idrak-appt-row-txt {
+  flex: 1;
+  text-align: right;
+  color: #D3FFF2;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.idrak-appt-specialist-cta { display: flex; justify-content: center; }
+
+/* ── Booking form ── */
+.idrak-appt-formwrap { padding: 0 1rem; }
+/* Figma Rectangle 43: bg rgba(1,70,54,0.24), rx 51, 4px mint gradient stroke */
+.idrak-appt-formcard {
+  padding: 1.5rem 1.25rem 1.75rem;
+  border: 2px solid transparent;
+  border-radius: 36px;
+  background:
+    linear-gradient(rgba(1,70,54,0.30), rgba(1,70,54,0.30)) padding-box,
+    linear-gradient(135deg, rgba(44,193,148,0.7) 0%, rgba(0,223,131,0.12) 55%, rgba(44,193,148,0.5) 100%) border-box;
+}
+/* pill-rounded fields (Figma rx 31) */
+.idrak-appt-formcard .idrak-input { border-radius: 27px; }
+.idrak-appt-form-title {
+  font-family: 'VEXA', sans-serif;
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: #2CC194;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  direction: rtl;
+}
+
+/* Field icons on the RIGHT for this page (matches Figma) */
+.idrak-appt-formcard .idrak-field-icon-svg {
+  left: auto;
+  right: 0.9rem;
+  color: #D3FFF2;
+}
+.idrak-appt-formcard .idrak-input {
+  padding: 0.8rem 3rem 0.8rem 1rem;   /* icon space on the right */
+}
+
+/* Selects + caret on the LEFT */
+.idrak-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='%232CC194'><path d='M15 6l-7 6 7 6z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: left 1.1rem center;
+  padding-left: 2.5rem !important;
+}
+.idrak-select option { background: #00120E; color: #D3FFF2; }
+.idrak-select:invalid { color: #2CC194; opacity: 0.75; }
+
+/* Date field */
+.idrak-date::-webkit-calendar-picker-indicator { opacity: 0; cursor: pointer; }
+
+/* Submit button with arrow */
+.idrak-appt-submit {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.7rem 2.25rem;
+  margin-top: 0.5rem;
+}
+.idrak-appt-submit-icon { width: 24px; height: 24px; color: #35C499; flex-shrink: 0; }
+
+/* Success state */
+.idrak-appt-success {
+  text-align: center;
+  direction: rtl;
+  padding: 1.5rem 0.5rem;
+  color: #D3FFF2;
+  font-family: 'VEXA', sans-serif;
+}
+.idrak-appt-success-mark {
+  width: 56px; height: 56px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: rgba(44,193,148,0.2);
+  border: 2px solid #2CC194;
+  color: #2CC194;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+}
+
+/* ════ DESKTOP (≥ 1024px) ════ */
+@media (min-width: 1024px) {
+  .idrak-appt-intro {
+    padding: 0 3rem;
+    margin: 3rem auto 3.5rem;
+    max-width: 1240px;
+    grid-template-columns: 1fr 1fr;   /* text | child */
+    direction: ltr;
+    align-items: center;
+    gap: 3rem;
+  }
+  .idrak-appt-q { font-size: 1.85rem; line-height: 1.7; }
+  .idrak-appt-cta { font-size: 1rem; padding: 0.7rem 2.5rem; }
+  .idrak-appt-childcard { min-height: 340px; margin-top: 60px; border-radius: 40px; }
+  .idrak-appt-child-img { height: 430px; margin-top: -90px; }
+  .idrak-appt-letter-a   { font-size: 3.4rem; }
+  .idrak-appt-letter-ar2 { font-size: 3.4rem; }
+
+  .idrak-appt-specialist {
+    padding: 0 3rem;
+    margin: 0 auto 3.5rem;
+    max-width: 1240px;
+    grid-template-columns: 1.4fr 1fr;  /* card | cta */
+    direction: ltr;
+    gap: 3rem;
+  }
+  .idrak-appt-card { padding: 1.75rem; border-radius: 34px; }
+  .idrak-appt-card-hd { font-size: 1.5rem; }
+  .idrak-appt-card-hd-icon { width: 32px; height: 32px; }
+  .idrak-appt-photo { width: 180px; border-radius: 24px; }
+  .idrak-appt-row { padding: 0.55rem 1rem; }
+  .idrak-appt-row-txt { font-size: 1rem; }
+  .idrak-appt-row-icon { width: 20px; height: 20px; }
+
+  .idrak-appt-formwrap { max-width: 760px; margin: 0 auto; padding: 0 3rem; }
+  .idrak-appt-formcard { padding: 2rem 2.5rem 2.5rem; }
+  .idrak-appt-form-title { font-size: 1.6rem; margin-bottom: 1.75rem; }
+  .idrak-appt-formcard .idrak-input { font-size: 1rem; padding: 0.95rem 3.25rem 0.95rem 1rem; }
+  .idrak-appt-submit { font-size: 1.05rem; padding: 0.8rem 3rem; }
+}

@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import Navbar from './components/Navbar'
 import AuthPage from './pages/AuthPage'
+import BookAppointment from './pages/BookAppointment'
 import CourseCatalog from './pages/CourseCatalog'
 import CourseDetail from './pages/CourseDetail'
 import StudentDashboard from './pages/StudentDashboard'
@@ -28,6 +29,9 @@ export default function App() {
             {/* Legacy auth URLs → root */}
             <Route path="/login"    element={<Navigate to="/" replace />} />
             <Route path="/register" element={<Navigate to="/" replace />} />
+
+            {/* Book-appointment landing (IDRAKIYA themed, no app navbar) */}
+            <Route path="/appointment" element={<BookAppointment />} />
 
             {/* Main app — all routes with Navbar */}
             <Route
