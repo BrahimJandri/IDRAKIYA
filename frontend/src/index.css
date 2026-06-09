@@ -2193,9 +2193,9 @@ select.input { cursor: pointer; }
 .idrak-header {
   position: relative;
   width: 100%;
-  height: 120px;       /* (186+27) * 0.5556 ≈ 119px */
+  height: 140px;       /* matches bg-top bottom so it doesn't bleed into nav */
   overflow: visible;   /* logo overflows top */
-  margin-bottom: 0;
+  margin-bottom: 0.5rem;
 }
 
 /* bg-top: Figma 1090×363 at (0, -111) */
@@ -2239,10 +2239,10 @@ select.input { cursor: pointer; }
 /* Main logo: same position as IDRAKIA-01 (it IS the logo) */
 .idrak-logo {
   position: absolute;
-  width: 252px;        /* 454 * 0.5556 */
-  height: 178px;       /* 321 * 0.5556 */
-  left: -13px;
-  top: -22px;
+  width: 210px;        /* slightly smaller */
+  height: 148px;
+  left: -8px;
+  top: -14px;
   object-fit: contain;
   object-position: left top;
   z-index: 2;
@@ -2286,11 +2286,11 @@ select.input { cursor: pointer; }
 .idrak-auth-pill {
   background: rgba(216,255,243,0.19);
   border: 1px solid rgba(216,255,243,0.3);
-  border-radius: 20px;         /* 37 * 0.5556 */
-  width: 78px;                 /* 141 * 0.5556 */
-  height: 15px;                /* 27 * 0.5556 */
+  border-radius: 16px;
+  width: 66px;
+  height: 20px;
   font-family: 'VEXA', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   color: #fff;
   cursor: pointer;
   display: flex;
@@ -2337,6 +2337,7 @@ select.input { cursor: pointer; }
   padding: 0.75rem 1rem;
   direction: ltr;
   margin-bottom: 1rem;
+  border-top: 1px solid rgba(44,193,148,0.12);
 }
 .idrak-contact-btn {
   background: rgba(1,70,54,0.2);
@@ -2399,8 +2400,9 @@ select.input { cursor: pointer; }
 .idrak-cards-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 14px;
   padding: 0 1rem;
+  margin-top: 48px;            /* room for heads overflowing the boxes */
   margin-bottom: 0.625rem;
   direction: ltr;
 }
@@ -2413,27 +2415,28 @@ select.input { cursor: pointer; }
 .idrak-card-outer-mint { background: linear-gradient(0deg, rgba(129,255,217,0.084) 0%, rgba(44,193,148,0.2) 100%); }
 .idrak-card-outer-green { background: linear-gradient(0deg, rgba(129,255,217,0.084) 0%, rgba(0,223,131,0.2) 100%); }
 .idrak-card-inner {
-  border-radius: 21px;
-  height: 210px;
+  border-radius: 18px;
+  height: 165px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;           /* head sticks out above the box */
   margin: 8px 8px 0;
 }
 .idrak-card-mint  { background: #2CC194; }
 .idrak-card-green { background: #00DF83; }
+/* Person images: anchored to box bottom, taller than box → head overflows top */
 .idrak-card-img-girl {
   position: absolute;
-  height: 240px; width: auto;
-  top: 0; left: 50%;
+  height: 205px; width: auto;
+  bottom: 0; top: auto; left: 50%;
   transform: translateX(-50%);
-  object-fit: cover; object-position: top center;
+  object-fit: cover; object-position: bottom center;
 }
 .idrak-card-img-boy {
   position: absolute;
-  height: 230px; width: auto;
-  top: 0; left: 50%;
+  height: 215px; width: auto;
+  bottom: 0; top: auto; left: 50%;
   transform: translateX(-50%);
-  object-fit: cover; object-position: top center;
+  object-fit: cover; object-position: bottom center;
 }
 .idrak-card-label {
   font-family: 'VEXA', sans-serif;
@@ -2539,7 +2542,8 @@ select.input { cursor: pointer; }
 }
 .idrak-input::placeholder { color: #2CC194; opacity: 0.75; }
 .idrak-input:focus { background: rgba(129,255,217,0.24); }
-.idrak-field-icon-img {
+.idrak-field-icon-img,
+.idrak-field-icon-svg {
   position: absolute;
   left: 0.75rem;
   top: 50%;
@@ -2547,6 +2551,15 @@ select.input { cursor: pointer; }
   width: 20px; height: 20px;
   object-fit: contain;
   pointer-events: none;
+}
+.idrak-terms {
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(211,255,242,0.55);
+  text-align: center;
+  direction: rtl;
+  line-height: 1.6;
+  margin-top: 0.875rem;
 }
 .idrak-forgot {
   font-family: 'VEXA', sans-serif;
@@ -2851,7 +2864,8 @@ select.input { cursor: pointer; }
     font-size: 1rem;
   }
 
-  .idrak-field-icon-img {
+  .idrak-field-icon-img,
+  .idrak-field-icon-svg {
     width:  24px;
     height: 24px;
     left:   0.875rem;

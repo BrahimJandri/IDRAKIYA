@@ -10,6 +10,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     full_name: str = Field(min_length=2, max_length=255)
+    phone: Optional[str] = Field(None, max_length=32)
     role: Role = Role.student
 
 
@@ -24,6 +25,7 @@ class UserOut(BaseModel):
     id: UUID
     email: str
     full_name: str
+    phone: Optional[str] = None
     avatar_url: Optional[str]
     bio: Optional[str]
     role: Role

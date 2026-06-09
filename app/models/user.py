@@ -15,6 +15,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=False)
+    phone = Column(String(32), nullable=True)
     avatar_url = Column(String(512), nullable=True)
     bio = Column(Text, nullable=True)
     role = Column(Enum(Role), nullable=False, default=Role.student)

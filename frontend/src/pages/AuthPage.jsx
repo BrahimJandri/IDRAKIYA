@@ -29,14 +29,14 @@ function AuthPageInner() {
   const { t }     = useTranslation()
 
   const [tab, setTab]             = useState('login')
-  const [form, setForm]           = useState({ full_name: '', email: '', password: '', role: 'student' })
+  const [form, setForm]           = useState({ full_name: '', email: '', phone: '', password: '', confirm_password: '', role: 'student' })
   const [error, setError]         = useState('')
   const [loading, setLoading]     = useState(false)
   const [twoFA, setTwoFA]         = useState(null)
   const [twoFACode, setTwoFACode] = useState('')
 
   const handle    = (e) => { setError(''); setForm({ ...form, [e.target.name]: e.target.value }) }
-  const switchTab = (next) => { setTab(next); setError(''); setForm({ full_name:'', email:'', password:'', role:'student' }) }
+  const switchTab = (next) => { setTab(next); setError(''); setForm({ full_name:'', email:'', phone:'', password:'', confirm_password:'', role:'student' }) }
 
   const handleGoogleSuccess = async (tr) => {
     setError(''); setLoading(true)
@@ -52,10 +52,22 @@ function AuthPageInner() {
   }
 
   const submit = async (e) => {
-    e.preventDefault(); setError(''); setLoading(true)
+    e.preventDefault(); setError('')
+    if (tab === 'register' && form.password !== form.confirm_password) {
+      setError('كلمتا المرور غير متطابقتين'); return
+    }
+    setLoading(true)
     try {
       const { deviceName, deviceType } = getDeviceInfo()
-      if (tab === 'register') await apiRegister(form)
+      if (tab === 'register') {
+        await apiRegister({
+          full_name: form.full_name,
+          email: form.email,
+          phone: form.phone || null,
+          password: form.password,
+          role: 'student',
+        })
+      }
       const { data } = await apiLogin({ email: form.email, password: form.password, device_name: deviceName, device_type: deviceType })
       if (data.requires_2fa) { setTwoFA({ tempToken: data.temp_token }); setLoading(false); return }
       localStorage.setItem('access_token', data.access_token)
@@ -215,11 +227,31 @@ function AuthPageInner() {
                 </div>
               )}
               <div className="idrak-field">
-                <img src="/people.png" alt="" className="idrak-field-icon-img" />
+                {tab === 'register' ? (
+                  <svg className="idrak-field-icon-svg" viewBox="0 0 24 24"
+                    fill="#014636" fillRule="evenodd" clipRule="evenodd" aria-hidden="true">
+                    <path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm1.6 2L12 12.1 19.4 7H4.6Z" />
+                  </svg>
+                ) : (
+                  <img src="/people.png" alt="" className="idrak-field-icon-img" />
+                )}
                 <input className="idrak-input" type="email" name="email" value={form.email}
-                  onChange={handle} placeholder="البريد الالكتروني أو رقم الهاتف"
+                  onChange={handle}
+                  placeholder={tab === 'register' ? 'البريد الإلكتروني' : 'البريد الالكتروني أو رقم الهاتف'}
                   required autoComplete="email" />
               </div>
+
+              {tab === 'register' && (
+                <div className="idrak-field">
+                  <svg className="idrak-field-icon-svg" viewBox="0 0 24 24"
+                    fill="#014636" fillRule="evenodd" clipRule="evenodd" aria-hidden="true">
+                    <path d="M9 2h6a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Zm3 15.4a1.15 1.15 0 1 0 0 2.3 1.15 1.15 0 0 0 0-2.3Z" />
+                  </svg>
+                  <input className="idrak-input" type="tel" name="phone" value={form.phone}
+                    onChange={handle} placeholder="رقم الهاتف (واتساب)" autoComplete="tel" />
+                </div>
+              )}
+
               <div className="idrak-field">
                 <img src="/padlock.png" alt="" className="idrak-field-icon-img" />
                 <input className="idrak-input" type="password" name="password" value={form.password}
@@ -228,13 +260,30 @@ function AuthPageInner() {
                   autoComplete={tab === 'login' ? 'current-password' : 'new-password'} />
               </div>
 
+              {tab === 'register' && (
+                <div className="idrak-field">
+                  <img src="/padlock.png" alt="" className="idrak-field-icon-img" />
+                  <input className="idrak-input" type="password" name="confirm_password" value={form.confirm_password}
+                    onChange={handle} placeholder="تأكيد كلمة المرور"
+                    required minLength={8} autoComplete="new-password" />
+                </div>
+              )}
+
               {tab === 'login' && (
                 <p className="idrak-forgot">نسيت كلمة المرور؟</p>
               )}
 
               <button className="idrak-submit-btn" disabled={loading}>
-                {loading ? (tab === 'login' ? 'جارٍ تسجيل الدخول…' : 'جارٍ إنشاء الحساب…') : 'ادخل إلى حسابي'}
+                {loading
+                  ? (tab === 'login' ? 'جارٍ تسجيل الدخول…' : 'جارٍ إنشاء الحساب…')
+                  : (tab === 'login' ? 'ادخل إلى حسابي' : 'أنشئ حسابي الآن')}
               </button>
+
+              {tab === 'register' && (
+                <p className="idrak-terms">
+                  بإنشاء حساب فإنك توافق على شروط الاستخدام وسياسة الخصوصية
+                </p>
+              )}
             </form>
 
             {GOOGLE_CLIENT_ID && (
