@@ -146,7 +146,7 @@ export default function StudentDashboard() {
                   <div className="empty-icon">📖</div>
                   <h3>{t('dashboard.noCoursesTitle')}</h3>
                   <p>{t('dashboard.noCoursesSub')}</p>
-                  <button className="btn btn-primary" onClick={() => navigate('/courses')}>{t('dashboard.browseCourses')}</button>
+                  <button className="btn btn-primary" onClick={() => navigate('/courses/all')}>{t('dashboard.browseCourses')}</button>
                 </div>
               ) : (
                 <div className="grid grid-2">

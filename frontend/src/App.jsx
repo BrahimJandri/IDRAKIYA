@@ -12,10 +12,10 @@ import StudentDashboard from './pages/StudentDashboard'
 import InstructorPanel from './pages/InstructorPanel'
 import AdminPanel from './pages/AdminPanel'
 
-function GuestRoute({ children }) {
+function GuestRoute({ children, redirectTo = '/dashboard' }) {
   const { user, loading } = useAuth()
   if (loading) return null
-  return user ? <Navigate to="/dashboard" replace /> : children
+  return user ? <Navigate to={redirectTo} replace /> : children
 }
 
 export default function App() {
@@ -24,7 +24,7 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Root — combined login/register, redirects to /courses if already logged in */}
+            {/* Root — combined login/register, redirects to /dashboard if already logged in */}
             <Route path="/" element={<GuestRoute><AuthPage /></GuestRoute>} />
 
             {/* Legacy auth URLs → root */}
@@ -34,8 +34,8 @@ export default function App() {
             {/* Book-appointment landing (IDRAKIYA themed, no app navbar) */}
             <Route path="/appointment" element={<BookAppointment />} />
 
-            {/* Courses landing (IDRAKIYA themed, no app navbar) */}
-            <Route path="/courses" element={<CourseCatalog />} />
+            {/* Courses landing (IDRAKIYA themed, no app navbar) — public, hidden once logged in */}
+            <Route path="/courses" element={<GuestRoute redirectTo="/courses/all"><CourseCatalog /></GuestRoute>} />
 
             {/* Main app — all routes with Navbar */}
             <Route
@@ -44,7 +44,7 @@ export default function App() {
                 <>
                   <Navbar />
                   <Routes>
-                    <Route path="/courses/all" element={<AllCourses />} />
+                    <Route path="/courses/all" element={<ProtectedRoute><AllCourses /></ProtectedRoute>} />
                     <Route path="/courses/:id" element={<CourseDetail />} />
                     <Route
                       path="/dashboard"

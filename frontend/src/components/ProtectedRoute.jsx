@@ -7,8 +7,8 @@ export default function ProtectedRoute({ children, role }) {
   if (loading) return <div className="spinner-center"><div className="spinner" /></div>
   if (!user) return <Navigate to="/" replace />
 
-  if (role === 'instructor' && user.role === 'student') return <Navigate to="/courses" replace />
-  if (role === 'admin' && user.role !== 'admin') return <Navigate to="/courses" replace />
+  if (role === 'instructor' && user.role === 'student') return <Navigate to="/courses/all" replace />
+  if (role === 'admin' && user.role !== 'admin') return <Navigate to="/courses/all" replace />
 
   return children
 }

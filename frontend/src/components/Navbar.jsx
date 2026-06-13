@@ -26,13 +26,14 @@ export default function Navbar() {
   }
 
   const close = () => setMenuOpen(false)
+  const coursesHref = user ? '/courses/all' : '/courses'
 
   return (
     <nav className="navbar">
       <div className="container">
         <div className="navbar-inner">
           {/* Brand */}
-          <Link to="/courses" className="nav-brand" onClick={close}>
+          <Link to={coursesHref} className="nav-brand" onClick={close}>
             <div className="nav-logo">
               <div className="nav-logo-pill" />
               <div className="nav-logo-dot" />
@@ -42,7 +43,7 @@ export default function Navbar() {
 
           {/* Desktop links */}
           <div className="nav-links">
-            <NavLink to="/courses" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+            <NavLink to={coursesHref} end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
               {t('nav.courses')}
             </NavLink>
             {user && (
@@ -97,7 +98,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="nav-mobile-menu">
-          <NavLink to="/courses" end className={({ isActive }) => `nav-mobile-link${isActive ? ' active' : ''}`} onClick={close}>
+          <NavLink to={coursesHref} end className={({ isActive }) => `nav-mobile-link${isActive ? ' active' : ''}`} onClick={close}>
             {t('nav.courses')}
           </NavLink>
           {user && (

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { listCourses, listCategories } from '../api/courses'
-import { useAuth } from '../context/AuthContext'
 import CourseCard from '../components/CourseCard'
 import { useTranslation } from 'react-i18next'
 
 export default function CourseCatalog() {
-  const { user } = useAuth()
   const { t } = useTranslation()
   const [courses, setCourses] = useState([])
   const [categories, setCategories] = useState([])
@@ -50,11 +47,6 @@ export default function CourseCatalog() {
             <em>{t('catalog.heroEmphasis')}</em>
           </h1>
           <p>{t('catalog.heroSubtitle')}</p>
-          {!user && (
-            <div className="page-hero-actions">
-              <Link to="/login" className="btn btn-primary btn-xl">{t('nav.signIn')}</Link>
-            </div>
-          )}
         </div>
       </div>
 
