@@ -9,7 +9,6 @@ from app.config import settings
 from app.dependencies.auth import require_instructor
 from app.models.user import User
 
-ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo"}
 ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".webm", ".ogg", ".mov", ".avi"}
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
@@ -20,14 +19,12 @@ async def upload_video(
     file: UploadFile = File(...),
     current_user: User = Depends(require_instructor),
 ):
-    # Validate extension
+    # Validate extension (the actual security boundary — files are saved under a
+    # server-generated name with this extension; the browser-supplied content-type
+    # is easily spoofed/unreliable and not checked)
     ext = Path(file.filename).suffix.lower() if file.filename else ""
     if ext not in ALLOWED_VIDEO_EXTENSIONS:
         raise HTTPException(status_code=400, detail=f"Unsupported file type. Allowed: {', '.join(ALLOWED_VIDEO_EXTENSIONS)}")
-
-    # Validate content-type header
-    if file.content_type and file.content_type not in ALLOWED_VIDEO_TYPES:
-        raise HTTPException(status_code=400, detail="Invalid content type")
 
     # Check size (stream first chunk to validate before reading all)
     max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024

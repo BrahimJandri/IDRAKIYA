@@ -6,6 +6,7 @@ import { listReviews, leaveReview } from '../api/payments'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import VideoPlayer from '../components/VideoPlayer'
+import { mediaUrl } from '../utils/media'
 
 export default function CourseDetail() {
   const { id } = useParams()
@@ -164,7 +165,7 @@ export default function CourseDetail() {
               <div ref={playerRef} className="ud-player-inner">
                 <VideoPlayer
                   ref={videoRef}
-                  src={lessonData.video_url}
+                  src={mediaUrl(lessonData.video_url)}
                   onContextMenu={(e) => e.preventDefault()}
                 />
                 <div className="video-watermark" aria-hidden="true">
@@ -184,7 +185,7 @@ export default function CourseDetail() {
             ) : (
               <div className="ud-welcome">
                 {course.thumbnail_url && (
-                  <img src={course.thumbnail_url} alt={course.title} className="ud-welcome-thumb" />
+                  <img src={mediaUrl(course.thumbnail_url)} alt={course.title} className="ud-welcome-thumb" />
                 )}
                 <div className="ud-welcome-overlay" />
                 <div className="ud-welcome-body">
@@ -206,7 +207,7 @@ export default function CourseDetail() {
               <h2 className="ud-lesson-name">{lessonData.title}</h2>
               <div className="ud-lesson-actions">
                 {lessonData.resource_url && (
-                  <a href={lessonData.resource_url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
+                  <a href={mediaUrl(lessonData.resource_url)} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
                     📎 {lessonData.resource_name || t('course.downloadResource')}
                   </a>
                 )}

@@ -19,6 +19,7 @@ from app.schemas.course import (
     ChapterOut,
     CourseCreate,
     CourseDetail,
+    CourseDetailFull,
     CourseOut,
     CourseUpdate,
     LessonCreate,
@@ -101,7 +102,7 @@ async def create_course(
     return course
 
 
-@router.get("/{course_id}", response_model=CourseDetail)
+@router.get("/{course_id}", response_model=None)
 async def get_course(
     course_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -123,7 +124,15 @@ async def get_course(
         or (current_user.role not in ("admin", "instructor") and current_user.id != course.instructor_id)
     ):
         raise HTTPException(status_code=404, detail="Course not found")
-    return course
+
+    # Course owner / admin get full lesson data (incl. video_url) so the
+    # instructor panel can show upload status per lesson.
+    is_owner_or_admin = current_user and (
+        current_user.role == "admin" or current_user.id == course.instructor_id
+    )
+    if is_owner_or_admin:
+        return CourseDetailFull.model_validate(course)
+    return CourseDetail.model_validate(course)
 
 
 @router.patch("/{course_id}", response_model=CourseOut)

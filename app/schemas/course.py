@@ -81,6 +81,10 @@ class ChapterOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ChapterOutFull(ChapterOut):
+    lessons: List[LessonOutFull] = []
+
+
 # ── Course ────────────────────────────────────────────────────────────────────
 
 class CourseCreate(BaseModel):
@@ -134,3 +138,7 @@ class CourseOut(BaseModel):
 
 class CourseDetail(CourseOut):
     chapters: List[ChapterOut] = []
+
+
+class CourseDetailFull(CourseOut):
+    chapters: List[ChapterOutFull] = []

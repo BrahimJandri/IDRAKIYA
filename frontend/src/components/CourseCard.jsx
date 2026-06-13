@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { mediaUrl } from '../utils/media'
 
 const EMOJIS = ['📚', '🎓', '💡', '🚀', '🌟', '🔥', '⚡', '🧠']
 const LEVEL_KEYS = { beginner: 'catalog.beginner', intermediate: 'catalog.intermediate', advanced: 'catalog.advanced' }
@@ -13,7 +14,7 @@ export default function CourseCard({ course }) {
   return (
     <article className="course-card" onClick={() => navigate(`/courses/${course.id}`)}>
       {course.thumbnail_url
-        ? <img className="course-thumb" src={course.thumbnail_url} alt={course.title} />
+        ? <img className="course-thumb" src={mediaUrl(course.thumbnail_url)} alt={course.title} />
         : <div className="course-thumb-blank"><span>{emoji}</span></div>
       }
       <div className="course-card-body">
