@@ -6,6 +6,7 @@ import Navbar from './components/Navbar'
 import AuthPage from './pages/AuthPage'
 import BookAppointment from './pages/BookAppointment'
 import CourseCatalog from './pages/CourseCatalog'
+import AllCourses from './pages/AllCourses'
 import CourseDetail from './pages/CourseDetail'
 import StudentDashboard from './pages/StudentDashboard'
 import InstructorPanel from './pages/InstructorPanel'
@@ -33,6 +34,9 @@ export default function App() {
             {/* Book-appointment landing (IDRAKIYA themed, no app navbar) */}
             <Route path="/appointment" element={<BookAppointment />} />
 
+            {/* Courses landing (IDRAKIYA themed, no app navbar) */}
+            <Route path="/courses" element={<CourseCatalog />} />
+
             {/* Main app — all routes with Navbar */}
             <Route
               path="/*"
@@ -40,7 +44,7 @@ export default function App() {
                 <>
                   <Navbar />
                   <Routes>
-                    <Route path="/courses"     element={<CourseCatalog />} />
+                    <Route path="/courses/all" element={<AllCourses />} />
                     <Route path="/courses/:id" element={<CourseDetail />} />
                     <Route
                       path="/dashboard"

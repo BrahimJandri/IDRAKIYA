@@ -2923,27 +2923,54 @@ select.input { cursor: pointer; }
 }
 .idrak-appt-cta:hover { background: rgba(1,70,54,0.45); }
 
-/* Child image card */
+/* Child image card — Figma Rectangle 33: solid #014636, rx 43, layered shadow */
 .idrak-appt-childcard {
   position: relative;
-  border-radius: 28px;
-  background: linear-gradient(180deg, rgba(2,172,133,0.18) 0%, rgba(1,70,54,0.30) 100%);
-  border: 1px solid rgba(44,193,148,0.18);
-  min-height: 230px;
-  margin-top: 40px;          /* room for the child overflowing the top */
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  border-radius: 32px;
+  background: #014636;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25), 0 8px 17.5px -5px #003B2D;
+  min-height: 220px;
+  margin-top: 52px;          /* room for the child overflowing the top */
   overflow: visible;
 }
+/* soft radial glow behind the card (Pngtree hazy glow) */
+.idrak-appt-childcard::before {
+  content: '';
+  position: absolute;
+  inset: -50px -30px -20px;
+  background: radial-gradient(closest-side at 62% 42%, rgba(129,255,217,0.18), transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* Figma "Rectangle 22" halo: soft teal blob, heavy blur */
+.idrak-appt-childcard::after,
+.idrak-appt-card::after {
+  content: '';
+  position: absolute;
+  width: 65%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #81FFD9 0%, rgba(255,255,255,0) 70%);
+  filter: blur(45px);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: -1;
+}
+.idrak-appt-childcard::after { left: -18%; top: 5%; }
+.idrak-appt-card::after { left: -15%; bottom: -25%; }
+/* Boy: bottom-anchored, wider than the card so he overflows the top edge */
 .idrak-appt-child-img {
-  position: relative;
-  z-index: 2;
-  max-width: 92%;
-  height: 290px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 116%;
+  max-width: none;
+  height: auto;
   object-fit: contain;
   object-position: bottom center;
-  margin-top: -40px;
+  z-index: 2;
+  pointer-events: none;
 }
 .idrak-appt-letter {
   position: absolute;
@@ -2969,6 +2996,8 @@ select.input { cursor: pointer; }
   align-items: center;
 }
 .idrak-appt-card {
+  position: relative;
+  overflow: visible;
   background: rgba(1,70,54,0.24);
   border: 1px solid rgba(44,193,148,0.15);
   border-radius: 26px;
@@ -3122,6 +3151,33 @@ select.input { cursor: pointer; }
   font-size: 1.75rem;
 }
 
+/* ════ TABLET / LARGE PHONE (≥ 600px) — two-column like Figma ════ */
+@media (min-width: 600px) {
+  /* Intro: text (left) + child card (right) side by side */
+  .idrak-appt-intro {
+    grid-template-columns: 1fr 1fr;
+    direction: ltr;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 1.5rem;
+    margin: 2.5rem 0 2.5rem;
+  }
+  .idrak-appt-q { font-size: clamp(1rem, 2.6vw, 1.5rem); }
+  .idrak-appt-childcard { min-height: 270px; margin-top: 56px; }
+  .idrak-appt-child-img { width: 122%; }
+
+  /* Specialist: card (left) + CTA (right) side by side */
+  .idrak-appt-specialist {
+    grid-template-columns: 1.5fr 1fr;
+    direction: ltr;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 1.5rem;
+  }
+  .idrak-appt-photo { width: 130px; }
+  .idrak-appt-row-txt { font-size: 0.85rem; }
+}
+
 /* ════ DESKTOP (≥ 1024px) ════ */
 @media (min-width: 1024px) {
   .idrak-appt-intro {
@@ -3135,8 +3191,8 @@ select.input { cursor: pointer; }
   }
   .idrak-appt-q { font-size: 1.85rem; line-height: 1.7; }
   .idrak-appt-cta { font-size: 1rem; padding: 0.7rem 2.5rem; }
-  .idrak-appt-childcard { min-height: 340px; margin-top: 60px; border-radius: 40px; }
-  .idrak-appt-child-img { height: 430px; margin-top: -90px; }
+  .idrak-appt-childcard { min-height: 360px; margin-top: 70px; border-radius: 40px; }
+  .idrak-appt-child-img { width: 118%; }
   .idrak-appt-letter-a   { font-size: 3.4rem; }
   .idrak-appt-letter-ar2 { font-size: 3.4rem; }
 
@@ -3162,3 +3218,293 @@ select.input { cursor: pointer; }
   .idrak-appt-formcard .idrak-input { font-size: 1rem; padding: 0.95rem 3.25rem 0.95rem 1rem; }
   .idrak-appt-submit { font-size: 1.05rem; padding: 0.8rem 3rem; }
 }
+
+/* ════════════════════════════════════════════════════
+   COURSES LANDING ("دوراتنا التكوينية")
+   ════════════════════════════════════════════════════ */
+
+.idrak-courses-title {
+  font-size: clamp(1.1rem, 3.7vw, 1.4rem);
+  font-weight: 400;
+}
+
+/* ── Intro pill ── */
+.idrak-courses-intro {
+  max-width: 525px;
+  margin: 0 auto 1.25rem;
+  padding: 0.9rem 1.5rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 28px;
+  text-align: center;
+  direction: rtl;
+}
+.idrak-courses-intro p {
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.85rem, 3.3vw, 1.125rem);
+  line-height: 1.7;
+  color: #fff;
+  margin: 0;
+}
+.idrak-courses-intro-em { color: #2CC194; }
+
+/* ── Featured course card ── */
+.idrak-course-feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.75rem;
+  margin-bottom: 1.5rem;
+}
+.idrak-course-card {
+  position: relative;
+  width: 100%;
+  max-width: 349px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, #014636 0%, #02AC85 100%);
+  box-shadow: 0 8px 17.5px -5px #003B2D;
+  border-radius: 18px;
+  padding: 0.9rem 1.1rem;
+  overflow: visible;
+}
+/* soft teal halo behind the card (Figma "Rectangle 22") */
+.idrak-course-card::before {
+  content: '';
+  position: absolute;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  left: -15%;
+  top: -15%;
+  background: radial-gradient(circle, #81FFD9 0%, rgba(255,255,255,0) 70%);
+  filter: blur(45px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: -1;
+}
+.idrak-course-card-hd {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+  direction: rtl;
+}
+.idrak-course-brain {
+  width: clamp(48px, 14vw, 72px);
+  height: clamp(48px, 14vw, 72px);
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-top: -1.1rem;
+}
+.idrak-course-hd-text { flex: 1; min-width: 0; }
+.idrak-course-hd-text h2 {
+  font-family: 'VEXA', sans-serif;
+  font-weight: 400;
+  font-size: clamp(0.95rem, 4.2vw, 1.25rem);
+  color: #fff;
+  margin: 0 0 0.35rem;
+  text-align: center;
+}
+.idrak-course-version {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  direction: rtl;
+}
+.idrak-course-version span:first-child {
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.6rem, 2.2vw, 0.7rem);
+  color: #00DF83;
+  white-space: nowrap;
+}
+.idrak-course-version-line {
+  flex: 1;
+  height: 2px;
+  background: #00DF83;
+}
+
+.idrak-course-card-body {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.idrak-course-meta {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.25rem;
+  flex: 0 0 38%;
+  margin: 0;
+  padding: 0;
+}
+.idrak-course-meta li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  background: rgba(1,70,54,0.2);
+  border-radius: 14px;
+  padding: 0.3rem 0.55rem;
+  direction: rtl;
+}
+.idrak-course-meta li span {
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.55rem, 2.2vw, 0.7rem);
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.idrak-course-meta-icon { width: 13px; height: 13px; color: #00DF83; flex-shrink: 0; }
+
+.idrak-course-highlight {
+  flex: 1;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(1,70,54,0.2);
+  border-radius: 16px;
+  padding: 0.55rem 0.85rem;
+  direction: rtl;
+}
+.idrak-course-highlight-num {
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(1.5rem, 7vw, 2.2rem);
+  color: #00DF83;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.idrak-course-highlight-text { flex: 1; text-align: right; min-width: 0; }
+.idrak-course-highlight-text h3 {
+  font-family: 'VEXA', sans-serif;
+  font-weight: 400;
+  font-size: clamp(0.95rem, 4.2vw, 1.25rem);
+  color: #fff;
+  margin: 0 0 0.2rem;
+}
+.idrak-course-highlight-text p {
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.55rem, 2.2vw, 0.7rem);
+  line-height: 1.6;
+  color: #00DF83;
+  margin: 0;
+}
+
+.idrak-course-price {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(1,70,54,0.2);
+  border-radius: 28px;
+  padding: 0.5rem 1rem;
+  direction: rtl;
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.9rem, 3.7vw, 1.125rem);
+}
+.idrak-course-price-label { color: #00DF83; }
+.idrak-course-price-value { color: #fff; }
+
+.idrak-course-enroll {
+  width: auto;
+  padding: 0.7rem 2.5rem;
+  font-size: clamp(0.95rem, 3.7vw, 1.25rem);
+  background: rgba(1,70,54,0.2);
+  border: 2px solid #014636;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+}
+
+/* ── Bottom CTA: "view all courses" ── */
+.idrak-courses-bottom {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  min-height: clamp(220px, 50vw, 380px);
+  background: linear-gradient(0deg, #014636 0%, #02AC85 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+/* decorative ring (Figma background "D" outline shapes), mostly off-screen */
+.idrak-courses-bottom::before,
+.idrak-courses-bottom::after {
+  content: '';
+  position: absolute;
+  border: clamp(16px, 4vw, 32px) solid rgba(255,255,255,0.07);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.idrak-courses-bottom::before {
+  width: 90vw; height: 90vw;
+  left: -55vw; top: 50%;
+  transform: translateY(-50%);
+}
+.idrak-courses-bottom::after {
+  width: 65vw; height: 65vw;
+  left: -40vw; top: 50%;
+  transform: translateY(-50%);
+  border-color: rgba(255,255,255,0.05);
+}
+.idrak-courses-bottom-content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem;
+}
+.idrak-courses-viewall {
+  width: auto;
+  padding: 0.75rem 1.5rem;
+  font-size: clamp(0.85rem, 3.2vw, 1.3rem);
+  white-space: nowrap;
+  background: rgba(1,70,54,0.2);
+  border: 2px solid #014636;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+}
+.idrak-courses-brain-wrap {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: clamp(130px, 32vw, 320px);
+  height: clamp(130px, 32vw, 320px);
+  margin-inline-end: clamp(-40px, -6vw, -10px);
+  pointer-events: none;
+}
+.idrak-courses-brain-shadow {
+  position: absolute;
+  inset: -30%;
+  width: 160%;
+  height: 160%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+.idrak-courses-brain-lg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.idrak-courses-magnifier {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 92%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+}
+
+/* ════ TABLET / DESKTOP ════ */
+@media (min-width: 768px) {
+  .idrak-courses-brain-wrap { margin-inline-end: clamp(-60px, -3vw, -10px); }
+}
+
