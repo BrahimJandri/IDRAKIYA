@@ -15,7 +15,7 @@ import AdminPanel from './pages/AdminPanel'
 function GuestRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return null
-  return user ? <Navigate to="/courses" replace /> : children
+  return user ? <Navigate to="/courses/all" replace /> : children
 }
 
 export default function App() {
