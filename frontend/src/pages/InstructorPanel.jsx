@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { listCourses, createCourse, updateCourse, deleteCourse, addChapter, addLesson, listCategories, uploadVideo } from '../api/courses'
+import { listCourses, getCourse, createCourse, updateCourse, deleteCourse, addChapter, addLesson, listCategories, uploadVideo } from '../api/courses'
 import { useTranslation } from 'react-i18next'
 
 function Modal({ title, onClose, children }) {
@@ -38,6 +38,10 @@ export default function InstructorPanel() {
   const [courseModal,  setCourseModal]  = useState(null)
   const [chapterModal, setChapterModal] = useState(null)
   const [lessonModal,  setLessonModal]  = useState(null)
+
+  const [expanded, setExpanded]             = useState({}) // courseId -> bool
+  const [courseDetails, setCourseDetails]   = useState({}) // courseId -> CourseDetail (with chapters/lessons)
+  const [detailsLoading, setDetailsLoading] = useState({}) // courseId -> bool
 
   const [courseForm,  setCourseForm]  = useState(BLANK_COURSE)
   const [chapterForm, setChapterForm] = useState(BLANK_CHAPTER)
@@ -89,11 +93,32 @@ export default function InstructorPanel() {
     catch (e) { flash(e.response?.data?.detail || t('instructor.deleteFailed'), true) }
   }
 
+  const refreshCourseDetail = async (courseId) => {
+    try {
+      const { data } = await getCourse(courseId)
+      setCourseDetails((d) => ({ ...d, [courseId]: data }))
+    } catch { /* ignore */ }
+  }
+
+  const toggleContent = async (courseId) => {
+    setExpanded((e) => ({ ...e, [courseId]: !e[courseId] }))
+    if (!courseDetails[courseId]) {
+      setDetailsLoading((d) => ({ ...d, [courseId]: true }))
+      try {
+        const { data } = await getCourse(courseId)
+        setCourseDetails((d) => ({ ...d, [courseId]: data }))
+      } catch (e) { flash(e.response?.data?.detail || t('instructor.failed'), true) }
+      finally { setDetailsLoading((d) => ({ ...d, [courseId]: false })) }
+    }
+  }
+
   const saveChapter = async (e) => {
     e.preventDefault(); setSaving(true)
     try {
-      await addChapter(chapterModal.courseId, { ...chapterForm, order: Number(chapterForm.order) })
+      const courseId = chapterModal.courseId
+      await addChapter(courseId, { ...chapterForm, order: Number(chapterForm.order) })
       flash(t('instructor.chapterAdded')); setChapterModal(null); setChapterForm(BLANK_CHAPTER)
+      await refreshCourseDetail(courseId)
     } catch (e) { flash(e.response?.data?.detail || t('instructor.failed'), true) }
     finally { setSaving(false) }
   }
@@ -115,9 +140,12 @@ export default function InstructorPanel() {
   const saveLesson = async (e) => {
     e.preventDefault(); setSaving(true)
     try {
+      const { courseId, chapterId } = lessonModal
       const payload = { ...lessonForm, order: Number(lessonForm.order), duration_seconds: Number(lessonForm.duration_seconds)||null }
-      await addLesson(lessonModal.courseId, lessonModal.chapterId, payload)
+      await addLesson(courseId, chapterId, payload)
       flash(t('instructor.lessonAdded')); setLessonModal(null); setLessonForm(BLANK_LESSON)
+      setCourses((cs) => cs.map((c) => c.id===courseId ? { ...c, total_lessons: c.total_lessons + 1 } : c))
+      await refreshCourseDetail(courseId)
     } catch (e) { flash(e.response?.data?.detail || t('instructor.failed'), true) }
     finally { setSaving(false) }
   }
@@ -195,15 +223,56 @@ export default function InstructorPanel() {
                       onClick={() => { setChapterModal({ courseId:course.id }); setChapterForm(BLANK_CHAPTER) }}>
                       {t('instructor.addChapter')}
                     </button>
-                    <button className="btn btn-ghost btn-sm"
-                      onClick={() => {
-                        const chId = prompt(t('instructor.chapterIdPrompt'))
-                        if (chId) { setLessonModal({ courseId:course.id, chapterId:chId }); setLessonForm(BLANK_LESSON) }
-                      }}>
-                      {t('instructor.addLesson')}
+                    <button className="btn btn-ghost btn-sm" onClick={() => toggleContent(course.id)}>
+                      {expanded[course.id] ? t('instructor.hideContent') : t('instructor.showContent')}
                     </button>
                     <button className="btn btn-danger btn-sm" onClick={() => handleDelete(course.id)}>{t('instructor.delete')}</button>
                   </div>
+
+                  {expanded[course.id] && (
+                    <div style={{ marginTop:'1rem' }}>
+                      {detailsLoading[course.id] ? (
+                        <div style={{ textAlign:'center', padding:'1rem', color:'var(--text-3)', fontSize:'.8125rem' }}>…</div>
+                      ) : !courseDetails[course.id]?.chapters?.length ? (
+                        <p style={{ fontSize:'.8125rem', color:'var(--text-3)', textAlign:'center', padding:'.75rem 0' }}>
+                          {t('instructor.noChaptersYet')}
+                        </p>
+                      ) : (
+                        courseDetails[course.id].chapters
+                          .slice().sort((a, b) => a.order - b.order)
+                          .map((ch) => (
+                            <div key={ch.id} className="chapter-block">
+                              <div className="chapter-header">
+                                <span className="chapter-title">{ch.title}</span>
+                                <button type="button" className="btn btn-secondary btn-sm"
+                                  onClick={() => { setLessonModal({ courseId:course.id, chapterId:ch.id }); setLessonForm(BLANK_LESSON) }}>
+                                  {t('instructor.addLesson')}
+                                </button>
+                              </div>
+                              <div className="chapter-body">
+                                {!ch.lessons?.length ? (
+                                  <p style={{ fontSize:'.8125rem', color:'var(--text-3)', textAlign:'center', padding:'.5rem 0' }}>
+                                    {t('instructor.noLessonsYet')}
+                                  </p>
+                                ) : (
+                                  ch.lessons.slice().sort((a, b) => a.order - b.order).map((les) => (
+                                    <div key={les.id} className="lesson-row" style={{ cursor:'default' }}>
+                                      <div className="lesson-row-left">
+                                        <span className="lesson-row-icon">{les.video_url ? '🎬' : '⚠️'}</span>
+                                        <span className="lesson-row-title">{les.title}</span>
+                                      </div>
+                                      <span className="lesson-row-dur">
+                                        {les.video_url ? t('instructor.videoReady') : t('instructor.noVideoYet')}
+                                      </span>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
