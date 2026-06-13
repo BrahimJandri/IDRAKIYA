@@ -46,7 +46,7 @@ function AuthPageInner() {
       localStorage.setItem('access_token', tokens.access_token)
       localStorage.setItem('refresh_token', tokens.refresh_token)
       const { data: user } = await getMe()
-      login(tokens, user); navigate('/courses/all')
+      login(tokens, user); navigate('/dashboard')
     } catch (e) { setError(e.response?.data?.detail || t('login.googleError')) }
     finally { setLoading(false) }
   }
@@ -73,7 +73,7 @@ function AuthPageInner() {
       localStorage.setItem('access_token', data.access_token)
       localStorage.setItem('refresh_token', data.refresh_token)
       const { data: user } = await getMe()
-      login(data, user); navigate(tab === 'register' ? '/dashboard' : '/courses/all')
+      login(data, user); navigate('/dashboard')
     } catch (e) {
       setError(e.response?.data?.detail || (tab === 'login' ? t('login.errorDefault') : t('register.errorDefault')))
     } finally { setLoading(false) }
@@ -86,7 +86,7 @@ function AuthPageInner() {
       localStorage.setItem('access_token', tokens.access_token)
       localStorage.setItem('refresh_token', tokens.refresh_token)
       const { data: user } = await getMe()
-      login(tokens, user); navigate('/courses/all')
+      login(tokens, user); navigate('/dashboard')
     } catch (e) { setError(e.response?.data?.detail || 'Invalid code') }
     finally { setLoading(false) }
   }
