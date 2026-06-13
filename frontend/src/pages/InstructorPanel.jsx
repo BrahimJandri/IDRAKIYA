@@ -294,12 +294,9 @@ export default function InstructorPanel() {
             </Field>
             <Field label={t('instructor.modal.videoUrlField')}>
               <div className="upload-field">
-                <input
-                  className="input"
-                  value={lessonForm.video_url}
-                  onChange={lf('video_url')}
-                  placeholder="https://… or upload below"
-                />
+                <span className="upload-status">
+                  {lessonForm.video_url ? '✓ Video uploaded' : 'No video uploaded yet'}
+                </span>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -314,18 +311,13 @@ export default function InstructorPanel() {
                   disabled={uploadProgress !== null}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  {uploadProgress !== null ? `Uploading ${uploadProgress}%` : '📁 Upload file'}
+                  {uploadProgress !== null ? `Uploading ${uploadProgress}%` : '📁 Upload video'}
                 </button>
               </div>
               {uploadProgress !== null && (
                 <div className="upload-progress-bar">
                   <div className="upload-progress-fill" style={{ width: `${uploadProgress}%` }} />
                 </div>
-              )}
-              {lessonForm.video_url?.startsWith('/media/') && (
-                <span style={{ fontSize: '.75rem', color: 'var(--mint)', marginTop: '.25rem', display: 'block' }}>
-                  ✓ Video uploaded
-                </span>
               )}
             </Field>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'.625rem' }}>
