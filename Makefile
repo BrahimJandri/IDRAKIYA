@@ -94,10 +94,15 @@ frontend:
 # ── Database ───────────────────────────────────────────────────────────────────
 .PHONY: db-up
 db-up:
+# 	@echo "  Starting Postgres + Redis…"
+# 	@docker compose up db redis -d
+# 	@echo "  Waiting for Postgres to be ready…"
+# 	@until docker compose exec db pg_isready -U idrakiya -q 2>/dev/null; do sleep 1; done
 	@echo "  Starting Postgres + Redis…"
-	@docker compose up db redis -d
-	@echo "  Waiting for Postgres to be ready…"
-	@until docker compose exec db pg_isready -U idrakiya -q 2>/dev/null; do sleep 1; done
+	@docker compose up -d db redis
+	@echo "  Waiting for Postgres to be healthy…"
+	@until docker compose ps | grep -q "db.*running"; do sleep 1; done
+	@until docker exec $$(docker compose ps -q db) pg_isready -U idrakiya -q; do sleep 1; done
 	@echo "  Database is ready."
 
 .PHONY: db-down

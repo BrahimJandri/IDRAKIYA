@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"/c/Users/bihi/.claude/projects/--wsl-localhost-Ubuntu-home-bjandri-IDRAKIYA/memory/\" 2>/dev/null || echo \"not found\")",
+      "Read(//c/Users/bihi/.claude/projects/--wsl-localhost-Ubuntu-home-bjandri-IDRAKIYA/**)",
+      "WebFetch(domain:www.hostinger.com)",
+      "Bash(xargs grep -l -i \"google\")",
+      "Bash(git -c safe.directory='*' add frontend/src/pages/AuthPage.jsx)",
+      "Bash(git -c safe.directory='*' status --porcelain frontend/src/pages/AuthPage.jsx)",
+      "Bash(git -c safe.directory='*' push origin main)",
+      "Bash(git -c safe.directory='*' remote -v)"
+    ]
+  }
+}
