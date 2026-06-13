@@ -73,7 +73,7 @@ function AuthPageInner() {
       localStorage.setItem('access_token', data.access_token)
       localStorage.setItem('refresh_token', data.refresh_token)
       const { data: user } = await getMe()
-      login(data, user); navigate('/courses')
+      login(data, user); navigate(tab === 'register' ? '/dashboard' : '/courses')
     } catch (e) {
       setError(e.response?.data?.detail || (tab === 'login' ? t('login.errorDefault') : t('register.errorDefault')))
     } finally { setLoading(false) }
