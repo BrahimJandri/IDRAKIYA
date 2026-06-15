@@ -101,7 +101,7 @@ export default function BookAppointment() {
               احجز موعداً
               <span className="idrak-nl-underline" />
             </a>
-            <a href="#" className="idrak-nl">من نحن</a>
+            <a href="/about" className="idrak-nl">من نحن</a>
           </div>
         </nav>
 

@@ -3508,3 +3508,103 @@ select.input { cursor: pointer; }
   .idrak-courses-brain-wrap { margin-inline-end: clamp(-60px, -3vw, -10px); }
 }
 
+/* ════════════════════════════════════════════════════
+   ABOUT US ("من نحن")
+   ════════════════════════════════════════════════════ */
+
+.idrak-about-card {
+  position: relative;
+  max-width: 525px;
+  margin: 3.5rem auto 1.75rem;
+  padding: 1.75rem 1.25rem 1.5rem;
+  background: rgba(1,70,54,0.2);
+  border: 1px solid rgba(44,193,148,0.15);
+  border-radius: 32px;
+  backdrop-filter: blur(16px);
+  text-align: center;
+}
+
+/* Corner badges (poke out of the card edge, like the Figma "Glass" cards) */
+.idrak-about-badge {
+  position: absolute;
+  top: -22px;
+  width: 54px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(1,70,54,0.5);
+  border: 2px solid #014636;
+  border-radius: 18px;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+}
+.idrak-about-badge-question { right: 1.25rem; }
+.idrak-about-badge-brain     { left: 1.25rem; }
+.idrak-about-badge-icon { width: 26px; height: 26px; object-fit: contain; color: #2CC194; }
+
+/* Brand lockup (card 1) */
+.idrak-about-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 1.25rem;
+}
+.idrak-about-brand-icon { width: 100px; height: auto; margin-bottom: 0.4rem; }
+.idrak-about-brand-ar {
+  font-family: 'VEXA', sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  direction: rtl;
+}
+.idrak-about-brand-en {
+  font-family: 'VEXA', sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.2em;
+  color: #fff;
+}
+.idrak-about-brand-tagline {
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  color: #2CC194;
+  opacity: 0.85;
+  margin-top: 0.35rem;
+}
+
+/* Photo (card 2) — overflows above the card top */
+.idrak-about-img-wrap {
+  margin: -3.75rem auto 1.25rem;
+  max-width: 280px;
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 8px 17.5px -5px #003B2D;
+}
+.idrak-about-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Description text */
+.idrak-about-text {
+  font-family: 'VEXA', sans-serif;
+  font-size: clamp(0.85rem, 3vw, 1.0625rem);
+  line-height: 1.9;
+  color: #fff;
+  text-align: center;
+  direction: rtl;
+}
+.idrak-about-text-em { color: #2CC194; }
+
+@media (min-width: 768px) {
+  .idrak-about-card { padding: 2.5rem 3rem; border-radius: 40px; }
+  .idrak-about-brand-icon { width: 140px; }
+  .idrak-about-brand-ar { font-size: 2rem; }
+  .idrak-about-brand-en { font-size: 1.6rem; }
+  .idrak-about-brand-tagline { font-size: 0.75rem; }
+  .idrak-about-text { font-size: 1.1rem; }
+  .idrak-about-img-wrap { max-width: 360px; margin-top: -4.5rem; }
+}
+

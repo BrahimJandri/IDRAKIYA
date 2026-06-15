@@ -157,7 +157,7 @@ function AuthPageInner() {
             </a>
             <a href="/courses" className="idrak-nl">الـدورات</a>
             <a href="/appointment" className="idrak-nl">احجز موعداً</a>
-            <a href="#" className="idrak-nl">من نحن</a>
+            <a href="/about" className="idrak-nl">من نحن</a>
           </div>
         </nav>
 

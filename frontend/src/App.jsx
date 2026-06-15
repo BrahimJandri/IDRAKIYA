@@ -5,6 +5,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import Navbar from './components/Navbar'
 import AuthPage from './pages/AuthPage'
 import BookAppointment from './pages/BookAppointment'
+import AboutUs from './pages/AboutUs'
 import CourseCatalog from './pages/CourseCatalog'
 import AllCourses from './pages/AllCourses'
 import CourseDetail from './pages/CourseDetail'
@@ -33,6 +34,9 @@ export default function App() {
 
             {/* Book-appointment landing (IDRAKIYA themed, no app navbar) */}
             <Route path="/appointment" element={<BookAppointment />} />
+
+            {/* About-us landing (IDRAKIYA themed, no app navbar) */}
+            <Route path="/about" element={<AboutUs />} />
 
             {/* Courses landing (IDRAKIYA themed, no app navbar) — public, hidden once logged in */}
             <Route path="/courses" element={<GuestRoute redirectTo="/courses/all"><CourseCatalog /></GuestRoute>} />

@@ -54,7 +54,7 @@ export default function CourseCatalog() {
               <span className="idrak-nl-underline" />
             </a>
             <a href="/appointment" className="idrak-nl">احجز موعداً</a>
-            <a href="#" className="idrak-nl">من نحن</a>
+            <a href="/about" className="idrak-nl">من نحن</a>
           </div>
         </nav>
 

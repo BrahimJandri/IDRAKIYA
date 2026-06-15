@@ -8,7 +8,14 @@
       "Bash(git -c safe.directory='*' add frontend/src/pages/AuthPage.jsx)",
       "Bash(git -c safe.directory='*' status --porcelain frontend/src/pages/AuthPage.jsx)",
       "Bash(git -c safe.directory='*' push origin main)",
-      "Bash(git -c safe.directory='*' remote -v)"
+      "Bash(git -c safe.directory='*' remote -v)",
+      "Bash(git -c safe.directory='*' add frontend/src/App.jsx frontend/src/components/ProtectedRoute.jsx frontend/src/components/Navbar.jsx frontend/src/pages/StudentDashboard.jsx frontend/src/pages/AllCourses.jsx)",
+      "Bash(git -c safe.directory='*' status --porcelain)",
+      "Bash(git -c safe.directory=* commit -m ' *)",
+      "Bash(ssh -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new root@72.62.158.112 \"echo OK && pwd\")",
+      "Bash(cd \"//wsl.localhost/Ubuntu/home/bjandri/IDRAKIYA\" && cat app/main.py)",
+      "Read(///wsl.localhost/Ubuntu/home/bjandri/**)",
+      "Bash(cd \"//wsl.localhost/Ubuntu/home/bjandri/IDRAKIYA\" && grep -n -B2 -A15 \"lessons/{lesson_id}\\\\|class LessonUpdate\\\\|class LessonOut\" app/routers/courses.py app/schemas/course.py)"
     ]
   }
 }
