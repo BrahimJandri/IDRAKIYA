@@ -3510,37 +3510,48 @@ select.input { cursor: pointer; }
 
 /* ════════════════════════════════════════════════════
    ABOUT US ("من نحن")
+   Figma frame: 1080px wide. Web scale: 600/1080 = 0.5556
    ════════════════════════════════════════════════════ */
 
-.idrak-about-card {
+/* Wrapper handles margin + badge anchor (no backdrop-filter = no clip) */
+.idrak-about-card-wrap {
   position: relative;
   max-width: 525px;
   margin: 3.5rem auto 1.75rem;
-  padding: 1.75rem 1.25rem 1.5rem;
+}
+
+.idrak-about-card {
+  padding: 2rem 1.5rem 1.75rem;
   background: rgba(1,70,54,0.2);
   border: 1px solid rgba(44,193,148,0.15);
-  border-radius: 32px;
+  border-radius: 49px;
   backdrop-filter: blur(16px);
   text-align: center;
 }
 
-/* Corner badges (poke out of the card edge, like the Figma "Glass" cards) */
+/* ── Badges: Figma 129×119 → 72×66px, border-radius 30→17px
+   shadow: -13px 17px 22.9px rgba(0,0,0,.25) → -7px 9px 13px  ── */
 .idrak-about-badge {
   position: absolute;
-  top: -22px;
-  width: 54px;
-  height: 50px;
+  top: -28px;
+  z-index: 10;
+  width: 72px;
+  height: 66px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(1,70,54,0.5);
-  border: 2px solid #014636;
-  border-radius: 18px;
-  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+  background: rgba(1,70,54,0.2);
+  border: 1px solid rgba(44,193,148,0.15);
+  border-radius: 17px;
+  box-shadow: -7px 9px 13px rgba(0,0,0,0.25);
 }
-.idrak-about-badge-question { right: 1.25rem; }
-.idrak-about-badge-brain     { left: 1.25rem; }
-.idrak-about-badge-icon { width: 26px; height: 26px; object-fit: contain; color: #2CC194; }
+.idrak-about-badge-question { right: 1rem; border: 3px solid red !important; background: red !important; min-width: 72px !important; min-height: 66px !important; }
+.idrak-about-badge-brain     { left: 1rem; }
+
+/* question icon: inline SVG — Figma 90×90 → 50px */
+.idrak-about-badge-icon-question { width: 50px; height: 50px; color: #fff; flex-shrink: 0; }
+/* brain icon: mint gradient PNG — Figma 114×114 → 63px */
+.idrak-about-badge-icon-brain    { width: 63px; height: 63px; object-fit: contain; flex-shrink: 0; }
 
 /* Brand lockup (card 1) */
 .idrak-about-brand {
@@ -3550,35 +3561,40 @@ select.input { cursor: pointer; }
   gap: 0.3rem;
   margin-bottom: 1.25rem;
 }
-.idrak-about-brand-icon { width: 100px; height: auto; margin-bottom: 0.4rem; }
+.idrak-about-brand-icon { width: 120px; height: auto; margin-bottom: 0.4rem; }
 .idrak-about-brand-ar {
   font-family: 'VEXA', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   color: #fff;
   direction: rtl;
 }
 .idrak-about-brand-en {
   font-family: 'VEXA', sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   letter-spacing: 0.2em;
   color: #fff;
 }
 .idrak-about-brand-tagline {
   font-family: 'VEXA', sans-serif;
-  font-size: 0.625rem;
+  font-size: 0.6rem;
   letter-spacing: 0.18em;
   color: #2CC194;
   opacity: 0.85;
   margin-top: 0.35rem;
 }
 
-/* Photo (card 2) — overflows above the card top */
-.idrak-about-img-wrap {
+/* Photo (card 2) — dark #014636 backing (Figma Rectangle 58: 567×323, r=88px)
+   wraps the image (Figma 550×309, r=85px), both overflow above card top */
+.idrak-about-img-backing {
   margin: -3.75rem auto 1.25rem;
-  max-width: 280px;
-  border-radius: 26px;
+  max-width: 312px;
+  background: rgba(1,70,54,0.78);
+  border-radius: 49px;
+  padding: 5px;
+}
+.idrak-about-img-wrap {
+  border-radius: 47px;
   overflow: hidden;
-  box-shadow: 0 8px 17.5px -5px #003B2D;
 }
 .idrak-about-img {
   display: block;
@@ -3587,7 +3603,7 @@ select.input { cursor: pointer; }
   object-fit: cover;
 }
 
-/* Description text */
+/* Description text — card 1 is mint green, card 2 is white (Figma exact) */
 .idrak-about-text {
   font-family: 'VEXA', sans-serif;
   font-size: clamp(0.85rem, 3vw, 1.0625rem);
@@ -3596,15 +3612,173 @@ select.input { cursor: pointer; }
   text-align: center;
   direction: rtl;
 }
+.idrak-about-card-1 .idrak-about-text { color: #2CC194; }
 .idrak-about-text-em { color: #2CC194; }
 
+/* ── FOOTER ── Figma: bg-gradient left=#014636 right=#002119, height≈484 ── */
+.idrak-about-footer {
+  margin-top: 2.5rem;
+  padding: 2rem 1.5rem 1.5rem;
+  background: linear-gradient(to left, #002119, #014636);
+  border-radius: 28px 28px 0 0;
+}
+
+/* Two-column row: contact (left) | brand (right) */
+.idrak-footer-top {
+  display: flex;
+  direction: ltr;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+/* ── Brand column (right side) ── */
+.idrak-footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  flex: 0 0 auto;
+}
+.idrak-footer-brand-icon { width: 90px; height: auto; }
+.idrak-footer-brand-ar {
+  font-family: 'VEXA', sans-serif;
+  font-size: 1.1rem;
+  color: #fff;
+  direction: rtl;
+}
+.idrak-footer-brand-en {
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.18em;
+  color: #fff;
+}
+.idrak-footer-brand-desc {
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.7rem;
+  line-height: 1.75;
+  color: #fff;
+  direction: rtl;
+  text-align: right;
+  margin-top: 0.5rem;
+  opacity: 0.9;
+}
+
+/* ── Contact column (left side) ── */
+.idrak-footer-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+.idrak-footer-contact-title {
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.95rem;
+  color: #2CC194;
+  direction: rtl;
+  margin-bottom: 0.25rem;
+  font-weight: 400;
+}
+.idrak-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  direction: ltr;
+  font-family: 'VEXA', sans-serif;
+  font-size: 0.82rem;
+  color: #fff;
+}
+/* Contact icon circles: Figma Ellipse 38×38 → 22px web */
+.idrak-footer-icon-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(44,193,148,0.18);
+  border: 1px solid rgba(44,193,148,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.idrak-footer-icon { width: 13px; height: 13px; color: #2CC194; }
+
+/* Social icons row: Figma 31×31 each */
+.idrak-footer-social {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+.idrak-footer-social-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.idrak-footer-social-icon:hover { background: rgba(44,193,148,0.25); }
+.idrak-footer-social-icon svg { width: 15px; height: 15px; }
+
+/* ── Bottom nav pill ──
+   Figma: Rectangle62 924×114 → 513×63px; icons 70×70 → 39px circles ── */
+.idrak-footer-nav {
+  display: flex;
+  direction: ltr;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  background: rgba(1,70,54,0.35);
+  border: 1px solid rgba(44,193,148,0.2);
+  border-radius: 50px;
+}
+.idrak-footer-nav-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(217,217,217,0.2);
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  padding: 0;
+}
+.idrak-footer-nav-btn:hover { background: rgba(217,217,217,0.35); transform: scale(1.08); }
+.idrak-footer-nav-btn svg { width: 20px; height: 20px; }
+.idrak-footer-nav-icon { width: 22px; height: 22px; object-fit: contain; }
+
 @media (min-width: 768px) {
-  .idrak-about-card { padding: 2.5rem 3rem; border-radius: 40px; }
-  .idrak-about-brand-icon { width: 140px; }
-  .idrak-about-brand-ar { font-size: 2rem; }
-  .idrak-about-brand-en { font-size: 1.6rem; }
+  .idrak-about-card { padding: 2.5rem 3rem; border-radius: 60px; }
+  .idrak-about-badge { width: 92px; height: 84px; border-radius: 22px; top: -36px; }
+  .idrak-about-badge-icon-question { width: 64px; height: 64px; }
+  .idrak-about-badge-icon-brain    { width: 80px; height: 80px; }
+  .idrak-about-brand-icon { width: 160px; }
+  .idrak-about-brand-ar { font-size: 2.1rem; }
+  .idrak-about-brand-en { font-size: 1.7rem; }
   .idrak-about-brand-tagline { font-size: 0.75rem; }
   .idrak-about-text { font-size: 1.1rem; }
-  .idrak-about-img-wrap { max-width: 360px; margin-top: -4.5rem; }
+  .idrak-about-img-backing { max-width: 380px; margin-top: -4.5rem; border-radius: 60px; }
+  .idrak-about-img-wrap { border-radius: 58px; }
+  .idrak-footer-brand-ar { font-size: 1.4rem; }
+  .idrak-footer-brand-en { font-size: 1.1rem; }
+  .idrak-footer-brand-desc { font-size: 0.8rem; }
+  .idrak-footer-contact-title { font-size: 1.1rem; }
+  .idrak-footer-row { font-size: 0.9rem; }
+  .idrak-footer-nav-btn { width: 50px; height: 50px; }
+  .idrak-footer-nav-btn svg { width: 24px; height: 24px; }
+  .idrak-footer-nav-icon { width: 26px; height: 26px; }
 }
 
