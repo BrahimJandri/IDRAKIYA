@@ -3513,11 +3513,12 @@ select.input { cursor: pointer; }
    Figma frame: 1080px wide. Web scale: 600/1080 = 0.5556
    ════════════════════════════════════════════════════ */
 
-/* Wrapper handles margin + badge anchor (no backdrop-filter = no clip) */
+/* Wrapper: badge anchor (position:relative) + pushes card down via padding-top */
 .idrak-about-card-wrap {
   position: relative;
   max-width: 525px;
   margin: 3.5rem auto 1.75rem;
+  padding-top: 38px;
 }
 
 .idrak-about-card {
@@ -3533,7 +3534,7 @@ select.input { cursor: pointer; }
    shadow: -13px 17px 22.9px rgba(0,0,0,.25) → -7px 9px 13px  ── */
 .idrak-about-badge {
   position: absolute;
-  top: -28px;
+  top: 0;
   z-index: 10;
   width: 72px;
   height: 66px;
@@ -3545,7 +3546,7 @@ select.input { cursor: pointer; }
   border-radius: 17px;
   box-shadow: -7px 9px 13px rgba(0,0,0,0.25);
 }
-.idrak-about-badge-question { right: 1rem; border: 3px solid red !important; background: red !important; min-width: 72px !important; min-height: 66px !important; }
+.idrak-about-badge-question { left: calc(100% - 88px); }
 .idrak-about-badge-brain     { left: 1rem; }
 
 /* question icon: inline SVG — Figma 90×90 → 50px */

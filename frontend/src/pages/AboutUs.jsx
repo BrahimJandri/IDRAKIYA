@@ -102,8 +102,8 @@ export default function AboutUs() {
 
         {/* ── CARD 1: Brand identity + mission ── */}
         <div className="idrak-about-card-wrap">
-          <div className="idrak-about-badge idrak-about-badge-question">
-            <Icon.question className="idrak-about-badge-icon idrak-about-badge-icon-question" />
+          <div className="idrak-about-badge idrak-about-badge-question" style={{fontSize:'2rem',color:'#fff',fontWeight:'bold'}}>
+            ?
           </div>
           <section className="idrak-about-card idrak-about-card-1">
             <div className="idrak-about-brand">
