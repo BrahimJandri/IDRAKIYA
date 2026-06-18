@@ -1,18 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 
 export function useTheme() {
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem('idrakiya_theme') || 'light'
-  )
-
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('idrakiya_theme', theme)
-  }, [theme])
+    document.documentElement.setAttribute('data-theme', 'dark')
+    localStorage.setItem('idrakiya_theme', 'dark')
+  }, [])
 
-  return {
-    theme,
-    isDark: theme === 'dark',
-    toggle: () => setTheme(t => (t === 'dark' ? 'light' : 'dark')),
-  }
+  return { theme: 'dark', isDark: true, toggle: () => {} }
 }

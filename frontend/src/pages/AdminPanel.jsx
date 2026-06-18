@@ -4,8 +4,8 @@ import {
   getStats, listUsers, updateUser, deleteUser,
   listAllCourses, adminUpdateCourse, adminDeleteCourse,
   listCategories, createCategory, deleteCategory,
-  listAllPayments,
 } from '../api/admin'
+import { listPendingUsers, approveUser, rejectUser } from '../api/auth'
 import { useTranslation } from 'react-i18next'
 
 // ── Tiny reusable components ────────────────────────────────────────────────
@@ -70,14 +70,14 @@ function SearchBar({ value, onChange, placeholder }) {
 export default function AdminPanel() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const locale = i18n.language === 'ar' ? 'ar-DZ' : 'fr-FR'
+  const locale = 'ar-DZ'
 
   const [tab, setTab]         = useState('stats')
   const [stats, setStats]     = useState(null)
   const [users, setUsers]     = useState([])
-  const [courses, setCourses] = useState([])
-  const [cats, setCats]       = useState([])
-  const [payments, setPayments] = useState([])
+  const [courses, setCourses]   = useState([])
+  const [cats, setCats]         = useState([])
+  const [pending, setPending]   = useState([])
   const [loading, setLoading] = useState(false)
   const [msg, setMsg]         = useState('')
   const [err, setErr]         = useState('')
@@ -95,10 +95,10 @@ export default function AdminPanel() {
     setLoading(true)
     const loaders = {
       stats:    () => getStats().then((r) => setStats(r.data)),
+      pending:  () => listPendingUsers().then((r) => setPending(r.data)),
       users:    () => listUsers().then((r) => setUsers(r.data)),
       courses:  () => listAllCourses().then((r) => setCourses(r.data)),
       cats:     () => listCategories().then((r) => setCats(r.data)),
-      payments: () => listAllPayments().then((r) => setPayments(r.data)),
     }
     loaders[tab]?.().catch(() => {}).finally(() => setLoading(false))
   }, [tab])
@@ -182,10 +182,10 @@ export default function AdminPanel() {
 
   const TABS = [
     { key: 'stats',    label: t('admin.tabs.overview') },
+    { key: 'pending',  label: 'طلبات التسجيل' },
     { key: 'users',    label: t('admin.tabs.users') },
     { key: 'courses',  label: t('admin.tabs.courses') },
     { key: 'cats',     label: t('admin.tabs.categories') },
-    { key: 'payments', label: t('admin.tabs.payments') },
   ]
 
   return (
@@ -240,7 +240,6 @@ export default function AdminPanel() {
                     { label: t('admin.actions.manageUsers'),   tab: 'users' },
                     { label: t('admin.actions.manageCourses'), tab: 'courses' },
                     { label: t('admin.actions.categories'),    tab: 'cats' },
-                    { label: t('admin.actions.viewPayments'),  tab: 'payments' },
                   ].map((a) => (
                     <button key={a.tab} className="btn btn-secondary" onClick={() => setTab(a.tab)}>
                       {a.label}
@@ -250,6 +249,60 @@ export default function AdminPanel() {
                     🎬 {t('admin.actions.instructorPanel')}
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* ── Pending Approvals ── */}
+            {tab === 'pending' && (
+              <div>
+                <div className="section-heading">
+                  <h2>طلبات التسجيل <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({pending.length})</span></h2>
+                </div>
+                {pending.length === 0 ? (
+                  <div className="card">
+                    <div className="card-body" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-3)' }}>
+                      <div style={{ fontSize: '2.5rem', marginBottom: '.75rem' }}>✅</div>
+                      <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>لا توجد طلبات تسجيل معلقة</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.875rem' }}>
+                    {pending.map((u) => (
+                      <div key={u.id} className="card">
+                        <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row-reverse', gap: '1rem', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.875rem', flexDirection: 'row-reverse' }}>
+                            <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,var(--mint),#00b386)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--green-900)', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '.9rem', flexShrink: 0 }}>
+                              {u.full_name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.9375rem', color: 'var(--text-1)' }}>{u.full_name}</div>
+                              <div style={{ fontSize: '.8125rem', color: 'var(--text-3)', marginTop: '.125rem' }}>{u.email}</div>
+                              {u.phone && <div style={{ fontSize: '.75rem', color: 'var(--text-3)' }}>{u.phone}</div>}
+                              <div style={{ fontSize: '.75rem', color: 'var(--text-3)', marginTop: '.125rem' }}>
+                                {new Date(u.created_at).toLocaleDateString('ar-DZ', { year: 'numeric', month: 'long', day: 'numeric' })}
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '.5rem' }}>
+                            <button className="btn btn-primary btn-sm" onClick={async () => {
+                              await approveUser(u.id)
+                              setPending(p => p.filter(x => x.id !== u.id))
+                            }}>
+                              ✅ قبول
+                            </button>
+                            <button className="btn btn-danger btn-sm" onClick={async () => {
+                              if (!window.confirm(`هل تريد رفض وحذف طلب ${u.full_name}؟`)) return
+                              await rejectUser(u.id)
+                              setPending(p => p.filter(x => x.id !== u.id))
+                            }}>
+                              ❌ رفض
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -388,38 +441,6 @@ export default function AdminPanel() {
               </div>
             )}
 
-            {/* ── Payments ── */}
-            {tab === 'payments' && (
-              <div>
-                <div className="section-heading">
-                  <h2>{t('admin.payments.title')} <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({payments.length})</span></h2>
-                </div>
-                <div className="card">
-                  <Table
-                    cols={[t('admin.payments.cols.amount'), t('admin.payments.cols.currency'), t('admin.payments.cols.status'), t('admin.payments.cols.date'), t('admin.payments.cols.paymentId')]}
-                    rows={payments.map((p) => [
-                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem' }}>
-                        ${Number(p.amount).toFixed(2)}
-                      </span>,
-                      <span>{p.currency}</span>,
-                      <span className={`badge ${
-                        p.status === 'completed' ? 'badge-mint'
-                        : p.status === 'failed' ? 'badge-neutral'
-                        : 'badge-amber'}`}>
-                        {p.status}
-                      </span>,
-                      <span style={{ color: 'var(--text-3)', fontSize: '.8rem' }}>
-                        {new Date(p.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </span>,
-                      <code style={{ fontSize: '.75rem', color: 'var(--text-3)' }}>
-                        {p.stripe_payment_intent_id?.slice(0, 20) || '—'}
-                      </code>,
-                    ])}
-                    empty={t('admin.payments.noRecords')}
-                  />
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>

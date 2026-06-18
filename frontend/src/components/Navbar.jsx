@@ -1,17 +1,33 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { logout as apiLogout } from '../api/auth'
 import { useTranslation } from 'react-i18next'
+import { mediaUrl } from '../utils/media'
 import { useTheme } from '../hooks/useTheme'
-import { SunIcon, MoonIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export default function Navbar() {
   const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation()
-  const { isDark, toggle: toggleTheme } = useTheme()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const { t } = useTranslation()
+  useTheme()
+  const [menuOpen, setMenuOpen]     = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef(null)
+
+  const initials = user?.full_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U'
+  const avatarSrc = user?.avatar_url ? mediaUrl(user.avatar_url) : null
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   const handleLogout = async () => {
     const rt = localStorage.getItem('refresh_token')
@@ -19,10 +35,7 @@ export default function Navbar() {
     logout()
     navigate('/')
     setMenuOpen(false)
-  }
-
-  const toggleLang = () => {
-    i18n.changeLanguage(i18n.language === 'ar' ? 'fr' : 'ar')
+    setProfileOpen(false)
   }
 
   const close = () => setMenuOpen(false)
@@ -32,13 +45,10 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="container">
         <div className="navbar-inner">
+
           {/* Brand */}
           <Link to={coursesHref} className="nav-brand" onClick={close}>
-            <div className="nav-logo">
-              <div className="nav-logo-pill" />
-              <div className="nav-logo-dot" />
-            </div>
-            <span className="nav-brand-name">IDRAK<em>IYA</em></span>
+            <img src="/logo.png" alt="IDRAKIYA" className="nav-logo-img" />
           </Link>
 
           {/* Desktop links */}
@@ -60,22 +70,51 @@ export default function Navbar() {
 
             <div className="nav-sep" />
 
-            <button className="nav-icon-btn" onClick={toggleTheme} title={isDark ? 'Light mode' : 'Dark mode'}>
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-
-            <button className="lang-toggle" onClick={toggleLang} title={i18n.language === 'ar' ? 'Français' : 'العربية'}>
-              {i18n.language === 'ar' ? 'FR' : 'ع'}
-            </button>
-
             {user ? (
-              <>
-                <div className="nav-sep" />
-                <span className="nav-user">{user.full_name}</span>
-                <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
-                  {t('nav.signOut')}
+              /* ── Profile dropdown ── */
+              <div className="nav-profile" ref={profileRef}>
+                <button
+                  className={`nav-avatar-btn${profileOpen ? ' nav-avatar-btn--open' : ''}`}
+                  onClick={() => setProfileOpen(o => !o)}
+                  aria-label="الملف الشخصي"
+                >
+                  <div className="nav-avatar">
+                    {avatarSrc ? <img src={avatarSrc} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%' }} /> : initials}
+                  </div>
                 </button>
-              </>
+
+                {profileOpen && (
+                  <div className="nav-dropdown" dir="rtl">
+                    {/* Header */}
+                    <div className="nav-dropdown-header">
+                      <div className="nav-avatar nav-avatar--lg">
+                        {avatarSrc ? <img src={avatarSrc} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%' }} /> : initials}
+                      </div>
+                      <div className="nav-dropdown-info">
+                        <div className="nav-dropdown-name">{user.full_name}</div>
+                        <div className="nav-dropdown-email">{user.email}</div>
+                      </div>
+                    </div>
+
+                    <div className="nav-dropdown-divider" />
+
+                    <Link to="/dashboard" className="nav-dropdown-item" onClick={() => setProfileOpen(false)}>
+                      🎓 {t('nav.myLearning')}
+                    </Link>
+                    {isAdmin && (
+                      <Link to="/admin" className="nav-dropdown-item" onClick={() => setProfileOpen(false)}>
+                        ⚙️ {t('nav.admin')}
+                      </Link>
+                    )}
+
+                    <div className="nav-dropdown-divider" />
+
+                    <button className="nav-dropdown-item nav-dropdown-item--danger" onClick={handleLogout}>
+                      🚪 {t('nav.signOut')}
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link to="/" className="btn btn-primary btn-sm">
                 {t('nav.signIn')}
@@ -85,9 +124,6 @@ export default function Navbar() {
 
           {/* Mobile controls */}
           <div className="nav-mobile-controls">
-            <button className="nav-icon-btn" onClick={toggleTheme}>
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
             <button className="nav-icon-btn" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
               {menuOpen ? <XMarkIcon /> : <Bars3Icon />}
             </button>
@@ -97,7 +133,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="nav-mobile-menu">
+        <div className="nav-mobile-menu" dir="rtl">
           <NavLink to={coursesHref} end className={({ isActive }) => `nav-mobile-link${isActive ? ' active' : ''}`} onClick={close}>
             {t('nav.courses')}
           </NavLink>
@@ -114,19 +150,21 @@ export default function Navbar() {
 
           <div className="nav-mobile-divider" />
 
-          <div className="nav-mobile-row">
-            <button className="nav-mobile-link" onClick={toggleLang}>
-              {i18n.language === 'ar' ? 'Passer en Français' : 'التبديل للعربية'}
-            </button>
-          </div>
-
           {user ? (
-            <div className="nav-mobile-row">
-              <span className="nav-mobile-user">{user.full_name}</span>
-              <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
-                {t('nav.signOut')}
+            <>
+              <div className="nav-mobile-profile">
+                <div className="nav-avatar nav-avatar--sm">
+                  {avatarSrc ? <img src={avatarSrc} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%' }} /> : initials}
+                </div>
+                <div>
+                  <div className="nav-mobile-name">{user.full_name}</div>
+                  <div className="nav-mobile-email">{user.email}</div>
+                </div>
+              </div>
+              <button className="nav-mobile-link nav-mobile-link--danger" onClick={handleLogout}>
+                🚪 {t('nav.signOut')}
               </button>
-            </div>
+            </>
           ) : (
             <Link to="/" className="btn btn-primary w-full" style={{ marginTop: '.25rem' }} onClick={close}>
               {t('nav.signIn')}

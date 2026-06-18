@@ -1,14 +1,16 @@
 import base64
 import io
 import secrets
+import uuid as uuid_lib
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import List
 from uuid import UUID
 
 import httpx
 import pyotp
 import qrcode
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from jose import JWTError
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +27,7 @@ from app.core.security import (
     decode_token,
 )
 from app.database import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import get_current_user, require_admin
 from app.models.session import UserSession
 from app.models.user import User
 from app.schemas.user import (
@@ -58,6 +60,7 @@ async def register(payload: UserRegister, db: AsyncSession = Depends(get_db)):
         full_name=payload.full_name,
         phone=payload.phone,
         role=payload.role,
+        is_active=False,
         verification_token=generate_verification_token(),
     )
     db.add(user)
@@ -71,10 +74,12 @@ async def login(payload: UserLogin, request: Request, db: AsyncSession = Depends
     result = await db.execute(select(User).where(User.email == payload.email))
     user: User | None = result.scalar_one_or_none()
 
-    if not user or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user:
+        raise HTTPException(status_code=401, detail="يرجى إنشاء حساب أولاً")
+    if not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="كلمة المرور غير صحيحة")
     if not user.is_active:
-        raise HTTPException(status_code=403, detail="Account disabled")
+        raise HTTPException(status_code=403, detail="pending_approval")
 
     # If 2FA is enabled, return a short-lived temp token instead of full tokens
     if user.totp_enabled:
@@ -371,6 +376,31 @@ async def update_me(
     return current_user
 
 
+@router.post("/me/avatar", response_model=UserOut)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    allowed = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+    ext = Path(file.filename).suffix.lower() if file.filename else ""
+    if ext not in allowed:
+        raise HTTPException(status_code=400, detail="نوع الملف غير مدعوم. المسموح: jpg, png, webp, gif")
+
+    max_bytes = 5 * 1024 * 1024  # 5 MB
+    contents = await file.read(max_bytes + 1)
+    if len(contents) > max_bytes:
+        raise HTTPException(status_code=413, detail="حجم الملف كبير جداً. الحد الأقصى 5 ميغابايت")
+
+    avatars_dir = Path(settings.UPLOAD_DIR) / "avatars"
+    avatars_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = f"{uuid_lib.uuid4()}{ext}"
+    (avatars_dir / filename).write_bytes(contents)
+
+    current_user.avatar_url = f"/media/avatars/{filename}"
+    return current_user
+
+
 @router.post("/me/change-password", status_code=status.HTTP_204_NO_CONTENT)
 async def change_password(
     payload: PasswordChange,
@@ -386,3 +416,45 @@ async def change_password(
         .where(UserSession.user_id == current_user.id)
         .values(is_active=False)
     )
+
+
+# ── Admin: pending user approvals ────────────────────────────────────────────
+
+@router.get("/admin/pending-users", response_model=List[UserOut])
+async def list_pending_users(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    result = await db.execute(
+        select(User).where(User.is_active == False, User.role != "admin").order_by(User.created_at.desc())
+    )
+    return result.scalars().all()
+
+
+@router.post("/admin/approve-user/{user_id}", response_model=UserOut)
+async def approve_user(
+    user_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.is_active = True
+    await db.commit()
+    return user
+
+
+@router.post("/admin/reject-user/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def reject_user(
+    user_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    await db.delete(user)
+    await db.commit()

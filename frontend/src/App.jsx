@@ -12,6 +12,7 @@ import CourseDetail from './pages/CourseDetail'
 import StudentDashboard from './pages/StudentDashboard'
 import InstructorPanel from './pages/InstructorPanel'
 import AdminPanel from './pages/AdminPanel'
+import PendingApproval from './pages/PendingApproval'
 
 function GuestRoute({ children, redirectTo = '/dashboard' }) {
   const { user, loading } = useAuth()
@@ -31,6 +32,9 @@ export default function App() {
             {/* Legacy auth URLs → root */}
             <Route path="/login"    element={<Navigate to="/" replace />} />
             <Route path="/register" element={<Navigate to="/" replace />} />
+
+            {/* Pending approval — shown after registration until admin approves */}
+            <Route path="/pending-approval" element={<PendingApproval />} />
 
             {/* Book-appointment landing (IDRAKIYA themed, no app navbar) */}
             <Route path="/appointment" element={<BookAppointment />} />

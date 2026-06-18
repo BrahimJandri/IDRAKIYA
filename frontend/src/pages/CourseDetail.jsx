@@ -123,7 +123,7 @@ export default function CourseDetail() {
   const toggleChapter = (chId) =>
     setExpandedChapters((prev) => ({ ...prev, [chId]: !prev[chId] }))
 
-  const locale = i18n.language === 'ar' ? 'ar-DZ' : 'fr-FR'
+  const locale = 'ar-DZ'
   const avgRating = reviews.length
     ? (reviews.reduce((s, r) => s + Number(r.rating), 0) / reviews.length).toFixed(1)
     : null

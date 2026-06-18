@@ -67,6 +67,7 @@ function AuthPageInner() {
           password: form.password,
           role: 'student',
         })
+        navigate('/pending-approval'); return
       }
       const { data } = await apiLogin({ email: form.email, password: form.password, device_name: deviceName, device_type: deviceType })
       if (data.requires_2fa) { setTwoFA({ tempToken: data.temp_token }); setLoading(false); return }
@@ -75,7 +76,9 @@ function AuthPageInner() {
       const { data: user } = await getMe()
       login(data, user); navigate('/dashboard')
     } catch (e) {
-      setError(e.response?.data?.detail || (tab === 'login' ? t('login.errorDefault') : t('register.errorDefault')))
+      const detail = e.response?.data?.detail
+      if (detail === 'pending_approval') { navigate('/pending-approval'); return }
+      setError(detail || (tab === 'login' ? t('login.errorDefault') : t('register.errorDefault')))
     } finally { setLoading(false) }
   }
 
@@ -87,7 +90,7 @@ function AuthPageInner() {
       localStorage.setItem('refresh_token', tokens.refresh_token)
       const { data: user } = await getMe()
       login(tokens, user); navigate('/dashboard')
-    } catch (e) { setError(e.response?.data?.detail || 'Invalid code') }
+    } catch (e) { setError(e.response?.data?.detail || 'رمز التحقق غير صحيح') }
     finally { setLoading(false) }
   }
 

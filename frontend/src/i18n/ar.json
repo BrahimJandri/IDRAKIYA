@@ -22,7 +22,7 @@
     "signIn": "تسجيل الدخول",
     "noAccount": "ليس لديك حساب بعد؟",
     "createOne": "إنشاء حساب",
-    "errorDefault": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    "errorDefault": "كلمة المرور غير صحيحة.",
     "orDivider": "أو",
     "continueWithGoogle": "المتابعة مع Google",
     "googleError": "فشل تسجيل الدخول عبر Google.",
