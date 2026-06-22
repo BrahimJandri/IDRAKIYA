@@ -218,97 +218,16 @@ export default function CourseDetail() {
             </div>
           )}
 
-          {/* Course info — always visible */}
-          <div className="ud-tab-body">
-            <div className="ud-overview">
-              {error && (
-                <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{error}</div>
-              )}
-              <div className="ud-overview-badges">
-                <span className="badge badge-dark">{course.level}</span>
-                {course.category && <span className="badge badge-white">{course.category.name}</span>}
-                {avgRating && <span className="ud-rating">⭐ {avgRating} ({reviews.length})</span>}
-              </div>
-
-              <div className="ud-overview-stats">
-                <span>📖 {course.total_lessons} {t('common.lessons')}</span>
-                {course.duration_hours && <span>⏱ {course.duration_hours}h</span>}
-                <span>🌐 {course.language}</span>
-              </div>
-
-              {course.description && (
-                <p className="ud-overview-desc">{course.description}</p>
-              )}
-
-              {!enrollment ? (
-                <button
-                  className="btn btn-primary btn-lg"
-                  style={{ marginTop: '1.25rem' }}
-                  onClick={handleEnroll}
-                  disabled={enrolling}
-                >
-                  {enrolling ? t('course.enrolling') : t('course.enrollFree')}
-                </button>
-              ) : (
-                <div className="ud-enrolled-row">
-                  <span className="badge badge-mint">{t('course.enrolledBadge')}</span>
-                  <div className="progress" style={{ flex: 1, maxWidth: 240 }}>
-                    <div className="progress-fill" style={{ width: `${enrollment.progress_percent}%` }} />
-                  </div>
-                  <span style={{ fontSize: '.8125rem', fontWeight: 600, color: 'var(--text-3)' }}>
-                    {enrollment.progress_percent}%
-                  </span>
-                </div>
-              )}
+          {error && (
+            <div className="alert alert-error" style={{ margin: '1rem' }}>{error}</div>
+          )}
+          {!enrollment && (
+            <div style={{ padding: '1rem' }}>
+              <button className="btn btn-primary btn-lg" onClick={handleEnroll} disabled={enrolling}>
+                {enrolling ? t('course.enrolling') : t('course.enrollFree')}
+              </button>
             </div>
-
-            {/* Reviews */}
-            <div className="ud-reviews" style={{ marginTop: '1.5rem' }}>
-              {enrollment && !reviewSent && (
-                <div className="card" style={{ marginBottom: '1.25rem' }}>
-                  <div className="card-body">
-                    <h3 style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '1rem' }}>
-                      {t('course.leaveReview')}
-                    </h3>
-                    <form onSubmit={submitReview}>
-                      <div className="form-group">
-                        <label>{t('course.rating')}</label>
-                        <div style={{ display: 'flex', gap: '.25rem' }}>
-                          {[1, 2, 3, 4, 5].map((n) => (
-                            <button key={n} type="button"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.375rem',
-                                opacity: review.rating >= n ? 1 : 0.25, transition: 'opacity .1s', padding: '.1rem' }}
-                              onClick={() => setReview({ ...review, rating: n })}>⭐
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="form-group">
-                        <label>{t('course.comment')}</label>
-                        <textarea className="input" rows={3} value={review.comment}
-                          onChange={(e) => setReview({ ...review, comment: e.target.value })}
-                          placeholder={t('course.commentPlaceholder')} />
-                      </div>
-                      <button className="btn btn-primary">{t('course.submitReview')}</button>
-                    </form>
-                  </div>
-                </div>
-              )}
-              {reviews.map((r) => (
-                <div key={r.id} className="card" style={{ marginBottom: '.75rem' }}>
-                  <div className="card-body">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.5rem' }}>
-                      <span style={{ color: '#f59e0b' }}>{'★'.repeat(Math.round(r.rating))}</span>
-                      <span style={{ fontSize: '.75rem', color: 'var(--text-3)', fontWeight: 500 }}>
-                        {new Date(r.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </span>
-                    </div>
-                    <p style={{ fontSize: '.9rem', color: 'var(--text-2)', lineHeight: 1.6 }}>{r.comment}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* ── Right: sidebar ──────────────────────── */}
