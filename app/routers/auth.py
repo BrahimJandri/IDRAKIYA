@@ -37,6 +37,8 @@ from app.schemas.user import (
     SessionOut,
     TokenPair,
     TwoFALoginRequest,
+    TwoFARecoverySend,
+    TwoFARecoveryVerify,
     TwoFASetupOut,
     TwoFAVerify,
     UserLogin,
@@ -44,6 +46,8 @@ from app.schemas.user import (
     UserRegister,
     UserUpdate,
 )
+from app.services.redis_client import get_redis
+from app.services.email import send_recovery_email
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -81,14 +85,14 @@ async def login(payload: UserLogin, request: Request, db: AsyncSession = Depends
     if not user.is_active:
         raise HTTPException(status_code=403, detail="pending_approval")
 
-    # If 2FA is enabled, return a short-lived temp token instead of full tokens
-    if user.totp_enabled:
-        temp_token = create_access_token(
-            {"sub": str(user.id), "type": "2fa_pending",
-             "dn": payload.device_name, "dt": payload.device_type},
-            expires_delta=timedelta(minutes=5),
-        )
-        return {"requires_2fa": True, "temp_token": temp_token}
+    # 2FA enforcement disabled — re-enable when email/SMTP is configured
+    # if user.totp_enabled:
+    #     temp_token = create_access_token(
+    #         {"sub": str(user.id), "type": "2fa_pending",
+    #          "dn": payload.device_name, "dt": payload.device_type},
+    #         expires_delta=timedelta(minutes=5),
+    #     )
+    #     return {"requires_2fa": True, "temp_token": temp_token}
 
     return await _issue_tokens(user, payload.device_name, payload.device_type, request, db)
 
@@ -416,6 +420,62 @@ async def change_password(
         .where(UserSession.user_id == current_user.id)
         .values(is_active=False)
     )
+
+
+# ── 2FA Recovery (lost authenticator) ────────────────────────────────────────
+
+@router.post("/2fa/recovery/send", status_code=status.HTTP_204_NO_CONTENT)
+async def send_2fa_recovery(payload: TwoFARecoverySend, db: AsyncSession = Depends(get_db)):
+    """Send a 6-digit recovery code to the user's email. Requires a valid 2fa_pending temp_token."""
+    invalid = HTTPException(status_code=401, detail="Invalid or expired token")
+    try:
+        data = decode_token(payload.temp_token)
+        if data.get("type") != "2fa_pending":
+            raise invalid
+        user_id = UUID(data["sub"])
+    except (JWTError, KeyError, ValueError):
+        raise invalid
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user: User | None = result.scalar_one_or_none()
+    if not user or not user.is_active:
+        raise invalid
+
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    redis = await get_redis()
+    await redis.setex(f"2fa_recovery:{user_id}", 600, code)  # 10-minute TTL
+
+    await send_recovery_email(user.email, code)
+
+
+@router.post("/2fa/recovery/verify", response_model=TokenPair)
+async def verify_2fa_recovery(payload: TwoFARecoveryVerify, request: Request, db: AsyncSession = Depends(get_db)):
+    """Verify the recovery code, disable 2FA, and issue full tokens."""
+    invalid = HTTPException(status_code=401, detail="Invalid or expired token")
+    try:
+        data = decode_token(payload.temp_token)
+        if data.get("type") != "2fa_pending":
+            raise invalid
+        user_id = UUID(data["sub"])
+    except (JWTError, KeyError, ValueError):
+        raise invalid
+
+    redis = await get_redis()
+    stored = await redis.get(f"2fa_recovery:{user_id}")
+    if not stored or stored != payload.code:
+        raise HTTPException(status_code=401, detail="رمز الاسترداد غير صحيح أو منتهي الصلاحية")
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user: User | None = result.scalar_one_or_none()
+    if not user or not user.is_active:
+        raise invalid
+
+    # Disable 2FA so user can re-enroll
+    user.totp_enabled = False
+    user.totp_secret = None
+    await redis.delete(f"2fa_recovery:{user_id}")
+
+    return await _issue_tokens(user, data.get("dn"), data.get("dt"), request, db)
 
 
 # ── Admin: pending user approvals ────────────────────────────────────────────

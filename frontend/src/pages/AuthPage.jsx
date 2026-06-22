@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login as apiLogin, register as apiRegister, googleAuth, getMe, login2FA } from '../api/auth'
+import { login as apiLogin, register as apiRegister, googleAuth, getMe, login2FA, send2FARecovery, verify2FARecovery } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 import { getDeviceInfo } from '../api/device'
 import { useTranslation } from 'react-i18next'
@@ -32,8 +32,11 @@ function AuthPageInner() {
   const [form, setForm]           = useState({ full_name: '', email: '', phone: '', password: '', confirm_password: '', role: 'student' })
   const [error, setError]         = useState('')
   const [loading, setLoading]     = useState(false)
-  const [twoFA, setTwoFA]         = useState(null)
-  const [twoFACode, setTwoFACode] = useState('')
+  const [twoFA, setTwoFA]             = useState(null)  // { tempToken }
+  const [twoFACode, setTwoFACode]     = useState('')
+  const [recovery, setRecovery]       = useState(false)  // show recovery form
+  const [recoveryCode, setRecoveryCode] = useState('')
+  const [recoverySent, setRecoverySent] = useState(false)
 
   const handle    = (e) => { setError(''); setForm({ ...form, [e.target.name]: e.target.value }) }
   const switchTab = (next) => { setTab(next); setError(''); setForm({ full_name:'', email:'', phone:'', password:'', confirm_password:'', role:'student' }) }
@@ -94,25 +97,83 @@ function AuthPageInner() {
     finally { setLoading(false) }
   }
 
+  const sendRecovery = async () => {
+    setError(''); setLoading(true)
+    try {
+      await send2FARecovery(twoFA.tempToken)
+      setRecoverySent(true)
+    } catch (e) { setError(e.response?.data?.detail || 'تعذّر إرسال رمز الاسترداد') }
+    finally { setLoading(false) }
+  }
+
+  const submitRecovery = async (e) => {
+    e.preventDefault(); setError(''); setLoading(true)
+    try {
+      const { data: tokens } = await verify2FARecovery({ temp_token: twoFA.tempToken, code: recoveryCode })
+      localStorage.setItem('access_token', tokens.access_token)
+      localStorage.setItem('refresh_token', tokens.refresh_token)
+      const { data: user } = await getMe()
+      login(tokens, user); navigate('/2fa-setup')  // must re-enroll
+    } catch (e) { setError(e.response?.data?.detail || 'رمز الاسترداد غير صحيح أو منتهي الصلاحية') }
+    finally { setLoading(false) }
+  }
+
   if (twoFA) return (
     <div className="idrak-page">
       <div className="idrak-2fa-center">
         <img src="/logo.png" alt="IDRAKIYA" className="idrak-2fa-logo" />
-        <div style={{ fontSize: '2.5rem', margin: '.5rem 0' }}>🔐</div>
-        <h2 className="idrak-2fa-title">التحقق بخطوتين</h2>
-        <p className="idrak-2fa-sub">أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة</p>
-        {error && <div className="idrak-error">{error}</div>}
-        <form onSubmit={submit2FA} style={{ width: '100%' }}>
-          <input className="idrak-code-input" type="text" inputMode="numeric" maxLength={6}
-            placeholder="000000" value={twoFACode}
-            onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ''))} autoFocus />
-          <button className="idrak-submit-btn" disabled={loading || twoFACode.length !== 6}>
-            {loading ? 'جارٍ التحقق…' : 'تحقق'}
-          </button>
-        </form>
-        <button className="idrak-back-btn" onClick={() => { setTwoFA(null); setTwoFACode(''); setError('') }}>
-          ← العودة إلى تسجيل الدخول
-        </button>
+        <div style={{ fontSize: '2.5rem', margin: '.5rem 0' }}>{recovery ? '📧' : '🔐'}</div>
+
+        {!recovery ? (
+          <>
+            <h2 className="idrak-2fa-title">التحقق بخطوتين</h2>
+            <p className="idrak-2fa-sub">أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة</p>
+            {error && <div className="idrak-error">{error}</div>}
+            <form onSubmit={submit2FA} style={{ width: '100%' }}>
+              <input className="idrak-code-input" type="text" inputMode="numeric" maxLength={6}
+                placeholder="000000" value={twoFACode}
+                onChange={(e) => { setError(''); setTwoFACode(e.target.value.replace(/\D/g, '')) }} autoFocus />
+              <button className="idrak-submit-btn" disabled={loading || twoFACode.length !== 6}>
+                {loading ? 'جارٍ التحقق…' : 'تحقق'}
+              </button>
+            </form>
+            <button className="idrak-back-btn" style={{ marginTop: '.5rem' }}
+              onClick={() => { setRecovery(true); setError(''); setRecoverySent(false) }}>
+              فقدت الوصول إلى تطبيق المصادقة؟
+            </button>
+            <button className="idrak-back-btn" onClick={() => { setTwoFA(null); setTwoFACode(''); setError('') }}>
+              ← العودة إلى تسجيل الدخول
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 className="idrak-2fa-title">استرداد الحساب</h2>
+            <p className="idrak-2fa-sub">
+              {recoverySent
+                ? 'تم إرسال رمز الاسترداد إلى بريدك الإلكتروني. أدخله أدناه — صالح لمدة 10 دقائق.'
+                : 'سنرسل رمز استرداد إلى بريدك الإلكتروني المسجّل لإعادة إعداد التحقق بخطوتين.'}
+            </p>
+            {error && <div className="idrak-error">{error}</div>}
+            {!recoverySent ? (
+              <button className="idrak-submit-btn" disabled={loading} onClick={sendRecovery}>
+                {loading ? 'جارٍ الإرسال…' : 'أرسل رمز الاسترداد'}
+              </button>
+            ) : (
+              <form onSubmit={submitRecovery} style={{ width: '100%' }}>
+                <input className="idrak-code-input" type="text" inputMode="numeric" maxLength={6}
+                  placeholder="000000" value={recoveryCode}
+                  onChange={(e) => { setError(''); setRecoveryCode(e.target.value.replace(/\D/g, '')) }} autoFocus />
+                <button className="idrak-submit-btn" disabled={loading || recoveryCode.length !== 6}>
+                  {loading ? 'جارٍ التحقق…' : 'تحقق واسترداد الحساب'}
+                </button>
+              </form>
+            )}
+            <button className="idrak-back-btn"
+              onClick={() => { setRecovery(false); setRecoverySent(false); setRecoveryCode(''); setError('') }}>
+              ← العودة إلى رمز المصادقة
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

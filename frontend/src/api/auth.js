@@ -20,6 +20,8 @@ export const setup2FA = () => api.post('/auth/2fa/setup')
 export const enable2FA = (code) => api.post('/auth/2fa/enable', { code })
 export const disable2FA = (code) => api.post('/auth/2fa/disable', { code })
 export const login2FA = (data) => api.post('/auth/2fa/login', data)
+export const send2FARecovery = (temp_token) => api.post('/auth/2fa/recovery/send', { temp_token })
+export const verify2FARecovery = (data) => api.post('/auth/2fa/recovery/verify', data)
 
 export const listPendingUsers = () => api.get('/auth/admin/pending-users')
 export const approveUser = (id) => api.post(`/auth/admin/approve-user/${id}`)

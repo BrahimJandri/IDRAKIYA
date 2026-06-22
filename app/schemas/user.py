@@ -75,6 +75,13 @@ class TwoFASetupOut(BaseModel):
     otpauth_uri: str
     qr_base64: str
 
+class TwoFARecoverySend(BaseModel):
+    temp_token: str
+
+class TwoFARecoveryVerify(BaseModel):
+    temp_token: str
+    code: str
+
 class GoogleAuthPayload(BaseModel):
     access_token: str
     device_name: Optional[str] = None

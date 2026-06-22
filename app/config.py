@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
 
+    # Email / SMTP
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+
     # Media / uploads
     UPLOAD_DIR: str = "media"
     MAX_UPLOAD_SIZE_MB: int = 500
