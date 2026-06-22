@@ -26,6 +26,8 @@ export function AuthProvider({ children }) {
     setUser(userData)
   }
 
+  const updateUser = (userData) => setUser(userData)
+
   const logout = () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
@@ -37,7 +39,7 @@ export function AuthProvider({ children }) {
   const isStudent = !!user
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin, isInstructor, isStudent }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, isAdmin, isInstructor, isStudent }}>
       {children}
     </AuthContext.Provider>
   )

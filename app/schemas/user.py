@@ -31,6 +31,7 @@ class UserOut(BaseModel):
     role: Role
     is_active: bool
     is_verified: bool
+    totp_enabled: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}

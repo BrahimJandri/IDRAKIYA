@@ -13,6 +13,7 @@ import StudentDashboard from './pages/StudentDashboard'
 import InstructorPanel from './pages/InstructorPanel'
 import AdminPanel from './pages/AdminPanel'
 import PendingApproval from './pages/PendingApproval'
+import TwoFASetup from './pages/TwoFASetup'
 
 function GuestRoute({ children, redirectTo = '/dashboard' }) {
   const { user, loading } = useAuth()
@@ -35,6 +36,9 @@ export default function App() {
 
             {/* Pending approval — shown after registration until admin approves */}
             <Route path="/pending-approval" element={<PendingApproval />} />
+
+            {/* Mandatory 2FA setup — shown after login if totp_enabled is false */}
+            <Route path="/2fa-setup" element={<TwoFASetup />} />
 
             {/* Book-appointment landing (IDRAKIYA themed, no app navbar) */}
             <Route path="/appointment" element={<BookAppointment />} />
