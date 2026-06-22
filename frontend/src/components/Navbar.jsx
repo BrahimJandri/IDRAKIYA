@@ -39,7 +39,7 @@ export default function Navbar() {
   }
 
   const close = () => setMenuOpen(false)
-  const coursesHref = user ? '/courses/all' : '/courses'
+  const coursesHref = user ? '/dashboard' : '/courses'
 
   return (
     <nav className="navbar">
@@ -56,11 +56,6 @@ export default function Navbar() {
             <NavLink to={coursesHref} end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
               {t('nav.courses')}
             </NavLink>
-            {user && (
-              <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-                {t('nav.myLearning')}
-              </NavLink>
-            )}
             {isAdmin && (
               <NavLink to="/admin" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
                 style={{ color: 'var(--mint)' }}>
@@ -137,11 +132,6 @@ export default function Navbar() {
           <NavLink to={coursesHref} end className={({ isActive }) => `nav-mobile-link${isActive ? ' active' : ''}`} onClick={close}>
             {t('nav.courses')}
           </NavLink>
-          {user && (
-            <NavLink to="/dashboard" className={({ isActive }) => `nav-mobile-link${isActive ? ' active' : ''}`} onClick={close}>
-              {t('nav.myLearning')}
-            </NavLink>
-          )}
           {isAdmin && (
             <NavLink to="/admin" className={({ isActive }) => `nav-mobile-link${isActive ? ' active' : ''}`} onClick={close} style={{ color: 'var(--mint)' }}>
               {t('nav.admin')}

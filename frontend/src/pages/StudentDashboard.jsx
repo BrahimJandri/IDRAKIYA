@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { myEnrollments } from '../api/enrollments'
+import { listCourses } from '../api/courses'
 import { getSessions, revokeSession, logoutAll, updateMe, changePassword, setup2FA, enable2FA, disable2FA, uploadAvatar } from '../api/auth'
 import { useTranslation } from 'react-i18next'
 import { useRef } from 'react'
@@ -37,6 +38,7 @@ export default function StudentDashboard() {
   const { t } = useTranslation()
   const [tab, setTab] = useState('learning')
   const [enrollments, setEnrollments] = useState([])
+  const [availableCourses, setAvailableCourses] = useState([])
 
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -56,7 +58,12 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     Promise.all([
-      myEnrollments().then((r) => setEnrollments(r.data)).catch(() => {}),
+      myEnrollments().then((r) => {
+        setEnrollments(r.data)
+        if (!r.data.length) {
+          listCourses({ is_published: true }).then((c) => setAvailableCourses(c.data)).catch(() => {})
+        }
+      }).catch(() => {}),
       getSessions().then((r) => setSessions(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false))
   }, [])
@@ -127,11 +134,6 @@ export default function StudentDashboard() {
     } catch (e) { flash(e.response?.data?.detail || 'رمز غير صحيح', true) }
   }
 
-  const stats = [
-    { icon: '📚', value: enrollments.length, label: t('dashboard.enrolled'), accent: 'var(--mint)' },
-    { icon: '⚡', value: enrollments.filter((e) => e.status === 'active' && e.progress_percent > 0).length, label: t('dashboard.inProgress'), accent: '#f59e0b' },
-    { icon: '✅', value: enrollments.filter((e) => e.status === 'completed').length, label: t('dashboard.completed'), accent: '#6366f1' },
-  ]
 
   const getDeviceIcon = (s) => {
     const n = (s.device_name || '').toLowerCase()
@@ -185,15 +187,6 @@ export default function StudentDashboard() {
 
         <div className="db-sidebar-divider" />
 
-        {/* Stats */}
-        <div className="db-sidebar-stats">
-          {stats.map((s) => (
-            <div key={s.label} className="db-sidebar-stat">
-              <span className="db-sidebar-stat-val" style={{ color: s.accent }}>{s.value}</span>
-              <span className="db-sidebar-stat-label">{s.label}</span>
-            </div>
-          ))}
-        </div>
       </aside>
 
       {/* ── Main ── */}
@@ -217,15 +210,6 @@ export default function StudentDashboard() {
             <div className="db-banner-greeting">{t('dashboard.hello')} <strong>{user?.full_name?.split(' ')[0]}</strong> 👋</div>
             <div className="db-banner-sub">مرحباً بك في لوحة التحكم الخاصة بك</div>
           </div>
-          <div className="db-banner-stats">
-            {stats.map((s) => (
-              <div key={s.label} className="db-banner-stat">
-                <span className="db-banner-stat-icon">{s.icon}</span>
-                <span className="db-banner-stat-val" style={{ color: s.accent }}>{s.value}</span>
-                <span className="db-banner-stat-label">{s.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Alerts */}
@@ -243,22 +227,54 @@ export default function StudentDashboard() {
               {/* ══ MY COURSES ══ */}
               {tab === 'learning' && (
                 !enrollments.length ? (
-                  <div className="db-empty">
-                    <div className="db-empty-icon">📖</div>
-                    <h3>{t('dashboard.noCoursesTitle')}</h3>
-                    <p>{t('dashboard.noCoursesSub')}</p>
-                    <button className="db-btn db-btn--primary" onClick={() => navigate('/courses/all')}>
-                      {t('dashboard.browseCourses')}
-                    </button>
+                  <div>
+                    {availableCourses.length > 0 ? (
+                      <>
+                        <div className="db-section-header" style={{ marginBottom: '1rem' }}>
+                          <h2 className="db-section-title">الدورات المتاحة</h2>
+                        </div>
+                        <div className="db-grid">
+                          {availableCourses.map((c) => (
+                            <div key={c.id} className="db-course-card" onClick={() => navigate(`/courses/${c.id}`)}>
+                              {c.thumbnail_url && (
+                                <img src={mediaUrl(c.thumbnail_url)} alt={c.title} className="db-course-thumb" />
+                              )}
+                              <div className="db-course-body">
+                                <div className="db-course-title">{c.title}</div>
+                                <div className="db-course-meta">
+                                  <span>📖 {c.total_lessons} {t('common.lessons')}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="db-empty">
+                        <div className="db-empty-icon">📖</div>
+                        <h3>{t('dashboard.noCoursesTitle')}</h3>
+                        <p>{t('dashboard.noCoursesSub')}</p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="db-grid">
                     {enrollments.map((e) => (
                       <div key={e.id} className="db-course-card" onClick={() => navigate(`/courses/${e.course_id}`)}>
+                        {e.course?.thumbnail_url && (
+                          <img
+                            src={mediaUrl(e.course.thumbnail_url)}
+                            alt={e.course.title}
+                            className="db-course-thumb"
+                          />
+                        )}
                         <div className="db-course-progress-bar">
                           <div className="db-course-progress-fill" style={{ width: `${e.progress_percent}%` }} />
                         </div>
                         <div className="db-course-body">
+                          {e.course?.title && (
+                            <div className="db-course-title">{e.course.title}</div>
+                          )}
                           <div className="db-course-top">
                             <span className={`db-badge ${e.status === 'completed' ? 'db-badge--mint' : 'db-badge--amber'}`}>
                               {e.status === 'completed' ? '✅ مكتمل' : '⚡ جارٍ'}

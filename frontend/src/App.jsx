@@ -7,7 +7,6 @@ import AuthPage from './pages/AuthPage'
 import BookAppointment from './pages/BookAppointment'
 import AboutUs from './pages/AboutUs'
 import CourseCatalog from './pages/CourseCatalog'
-import AllCourses from './pages/AllCourses'
 import CourseDetail from './pages/CourseDetail'
 import StudentDashboard from './pages/StudentDashboard'
 import InstructorPanel from './pages/InstructorPanel'
@@ -47,7 +46,7 @@ export default function App() {
             <Route path="/about" element={<AboutUs />} />
 
             {/* Courses landing (IDRAKIYA themed, no app navbar) — public, hidden once logged in */}
-            <Route path="/courses" element={<GuestRoute redirectTo="/courses/all"><CourseCatalog /></GuestRoute>} />
+            <Route path="/courses" element={<GuestRoute redirectTo="/dashboard"><CourseCatalog /></GuestRoute>} />
 
             {/* Main app — all routes with Navbar */}
             <Route
@@ -56,7 +55,7 @@ export default function App() {
                 <>
                   <Navbar />
                   <Routes>
-                    <Route path="/courses/all" element={<ProtectedRoute><AllCourses /></ProtectedRoute>} />
+                    <Route path="/courses/all" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/courses/:id" element={<CourseDetail />} />
                     <Route
                       path="/dashboard"
@@ -82,7 +81,7 @@ export default function App() {
                         </ProtectedRoute>
                       }
                     />
-                    <Route path="*" element={<Navigate to="/courses" replace />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>
                 </>
               }

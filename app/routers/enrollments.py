@@ -4,6 +4,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -20,7 +21,9 @@ async def _get_enrollment(
     student_id: UUID, course_id: UUID, db: AsyncSession
 ) -> Enrollment:
     result = await db.execute(
-        select(Enrollment).where(
+        select(Enrollment)
+        .options(selectinload(Enrollment.course))
+        .where(
             Enrollment.student_id == student_id,
             Enrollment.course_id == course_id,
         )
@@ -42,19 +45,6 @@ async def enroll(
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
-    if not course.is_free and float(course.price) > 0:
-        # Check if payment exists
-        from app.models.payment import Payment
-        from app.core.permissions import PaymentStatus
-        pay_result = await db.execute(
-            select(Payment).where(
-                Payment.student_id == current_user.id,
-                Payment.course_id == course_id,
-                Payment.status == PaymentStatus.completed,
-            )
-        )
-        if not pay_result.scalar_one_or_none():
-            raise HTTPException(status_code=402, detail="Payment required to enroll in this course")
 
     existing = await db.execute(
         select(Enrollment).where(
@@ -68,6 +58,7 @@ async def enroll(
     enrollment = Enrollment(student_id=current_user.id, course_id=course_id)
     db.add(enrollment)
     await db.flush()
+    await db.refresh(enrollment, ["course"])
     return enrollment
 
 
@@ -77,7 +68,9 @@ async def my_enrollments(
     current_user: User = Depends(get_current_user),
 ):
     result = await db.execute(
-        select(Enrollment).where(Enrollment.student_id == current_user.id)
+        select(Enrollment)
+        .options(selectinload(Enrollment.course))
+        .where(Enrollment.student_id == current_user.id)
     )
     return result.scalars().all()
 

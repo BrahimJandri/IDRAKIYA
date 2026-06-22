@@ -9,8 +9,6 @@ export default function CourseCard({ course }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const emoji = EMOJIS[course.title.charCodeAt(0) % EMOJIS.length]
-  const isFree = course.is_free || Number(course.price) === 0
-
   return (
     <article className="course-card" onClick={() => navigate(`/courses/${course.id}`)}>
       {course.thumbnail_url
@@ -20,10 +18,6 @@ export default function CourseCard({ course }) {
       <div className="course-card-body">
         <div className="course-badges">
           <span className="badge badge-dark">{t(LEVEL_KEYS[course.level]) || course.level}</span>
-          {isFree
-            ? <span className="badge badge-mint">{t('common.free')}</span>
-            : <span className="badge badge-amber">${Number(course.price).toFixed(2)}</span>
-          }
           {course.category && <span className="badge badge-neutral">{course.category.name}</span>}
         </div>
         <h3 className="course-title">{course.title}</h3>

@@ -6,6 +6,14 @@ from pydantic import BaseModel
 from app.core.permissions import EnrollmentStatus
 
 
+class CourseSnippet(BaseModel):
+    id: UUID
+    title: str
+    thumbnail_url: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
 class EnrollmentOut(BaseModel):
     id: UUID
     course_id: UUID
@@ -14,6 +22,7 @@ class EnrollmentOut(BaseModel):
     progress_percent: float
     enrolled_at: datetime
     completed_at: Optional[datetime]
+    course: Optional[CourseSnippet] = None
 
     model_config = {"from_attributes": True}
 
