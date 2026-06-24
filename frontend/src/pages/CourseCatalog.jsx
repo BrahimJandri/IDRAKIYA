@@ -46,7 +46,7 @@ export default function CourseCatalog() {
 
         {/* ── NAV ── */}
         <nav className="idrak-nav">
-          <button className="idrak-contact-btn">تواصل معنا</button>
+          <a href="https://linktr.ee/idrakiya" target="_blank" rel="noreferrer" className="idrak-contact-btn">تواصل معنا</a>
           <div className="idrak-nav-links">
             <a href="/" className="idrak-nl">الرئيسية</a>
             <a href="/courses" className="idrak-nl idrak-nl-active">
@@ -111,25 +111,20 @@ export default function CourseCatalog() {
             </div>
           </div>
 
-          <button className="idrak-cta-btn idrak-course-enroll">سجّل في الدورة</button>
         </section>
 
-        {/* ── BOTTOM CTA ── */}
-        <section className="idrak-courses-bottom">
-          <div className="idrak-courses-bottom-content">
-            <button className="idrak-cta-btn idrak-courses-viewall" onClick={() => navigate('/courses/all')}>
-              عرض جميع الدورات
-            </button>
-          </div>
-          <div className="idrak-courses-brain-wrap">
-            <img src="/brain-shadow.png" alt="" className="idrak-courses-brain-shadow"
-              onError={(e) => { e.currentTarget.style.display = 'none' }} />
-            <img src="/brain.png" alt="" className="idrak-courses-brain-lg"
-              onError={(e) => { e.currentTarget.style.display = 'none' }} />
-            <img src="/magnifier.png" alt="" className="idrak-courses-magnifier"
-              onError={(e) => { e.currentTarget.style.display = 'none' }} />
-          </div>
-        </section>
+        {/* ── ENROLL CTA ── */}
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '1.5rem 0 2rem' }}>
+          <a
+            href={`https://wa.me/212723327524?text=${encodeURIComponent('السلام عليكم أنا مهتم بالتسجيل في دورة إضطرابات التعلم الخاصة')}`}
+            target="_blank"
+            rel="noreferrer"
+            className="idrak-cta-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            سجّل في الدورة
+          </a>
+        </div>
 
       </div>
     </div>

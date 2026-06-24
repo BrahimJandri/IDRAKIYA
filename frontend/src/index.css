@@ -3270,12 +3270,12 @@ select.input { cursor: pointer; }
 .idrak-course-card {
   position: relative;
   width: 100%;
-  max-width: 349px;
+  max-width: 525px;
   margin: 0 auto;
   background: linear-gradient(180deg, #014636 0%, #02AC85 100%);
   box-shadow: 0 8px 17.5px -5px #003B2D;
   border-radius: 18px;
-  padding: 0.9rem 1.1rem;
+  padding: 1.4rem 1.6rem;
   overflow: visible;
 }
 /* soft teal halo behind the card (Figma "Rectangle 22") */
@@ -3638,7 +3638,7 @@ select.input { cursor: pointer; }
 /* Two-column row: contact (left) | brand (right) */
 .idrak-footer-top {
   display: flex;
-  direction: ltr;
+  direction: rtl;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1.5rem;
@@ -3654,7 +3654,7 @@ select.input { cursor: pointer; }
   gap: 0.2rem;
   flex: 0 0 auto;
 }
-.idrak-footer-brand-icon { width: 90px; height: auto; }
+.idrak-footer-brand-icon { width: 200px; height: auto; }
 .idrak-footer-brand-ar {
   font-family: 'VEXA', sans-serif;
   font-size: 1.1rem;
@@ -3743,7 +3743,7 @@ select.input { cursor: pointer; }
    Figma: Rectangle62 924×114 → 513×63px; icons 70×70 → 39px circles ── */
 .idrak-footer-nav {
   display: flex;
-  direction: ltr;
+  direction: rtl;
   justify-content: space-between;
   align-items: center;
   max-width: 480px;
@@ -3771,6 +3771,20 @@ select.input { cursor: pointer; }
 .idrak-footer-nav-btn:hover { background: rgba(217,217,217,0.35); transform: scale(1.08); }
 .idrak-footer-nav-btn svg { width: 20px; height: 20px; }
 .idrak-footer-nav-icon { width: 22px; height: 22px; object-fit: contain; }
+
+.idrak-bottom-nav-fixed {
+  position: fixed;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 100%;
+  padding: 0 1rem;
+  pointer-events: none;
+}
+.idrak-bottom-nav-fixed .idrak-footer-nav {
+  pointer-events: all;
+}
 
 @media (min-width: 768px) {
   .idrak-about-card { padding: 2.5rem 3rem; border-radius: 60px; }

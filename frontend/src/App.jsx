@@ -13,6 +13,7 @@ import InstructorPanel from './pages/InstructorPanel'
 import AdminPanel from './pages/AdminPanel'
 import PendingApproval from './pages/PendingApproval'
 import TwoFASetup from './pages/TwoFASetup'
+import BottomNav from './components/BottomNav'
 
 function GuestRoute({ children, redirectTo = '/dashboard' }) {
   const { user, loading } = useAuth()
@@ -25,6 +26,7 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
         <BrowserRouter>
+          <BottomNav />
           <Routes>
             {/* Root — combined login/register, redirects to /dashboard if already logged in */}
             <Route path="/" element={<GuestRoute><AuthPage /></GuestRoute>} />

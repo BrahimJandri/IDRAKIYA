@@ -213,7 +213,7 @@ function AuthPageInner() {
 
         {/* ── 3. Nav ── */}
         <nav className="idrak-nav">
-          <button className="idrak-contact-btn">تواصل معنا</button>
+          <a href="https://linktr.ee/idrakiya" target="_blank" rel="noreferrer" className="idrak-contact-btn">تواصل معنا</a>
           <div className="idrak-nav-links">
             <a href="#" className="idrak-nl idrak-nl-active">
               الرئيسية
@@ -230,40 +230,6 @@ function AuthPageInner() {
           <div className="idrak-accent-line idrak-accent-l" />
           <h1 className="idrak-hero">ادخل إلى عالم إدراكية — وابدأ رحلتك التعليمية اليوم</h1>
           <div className="idrak-accent-line idrak-accent-r" />
-        </div>
-
-        {/* ── 5. Cards ── */}
-        <div className="idrak-cards-row">
-          {/* Girl / login card */}
-          <div className="idrak-card-outer idrak-card-outer-mint">
-            <div className="idrak-card-inner idrak-card-mint">
-              <img src="/girl.png" alt="student" className="idrak-card-img idrak-card-img-girl" />
-            </div>
-            <p className="idrak-card-label">سجّل دخـــولك لمتـابعة دوراتك</p>
-          </div>
-
-          {/* Boy / appointment card */}
-          <div className="idrak-card-outer idrak-card-outer-green">
-            <div className="idrak-card-inner idrak-card-green">
-              <img src="/boy.png" alt="specialist" className="idrak-card-img idrak-card-img-boy" />
-            </div>
-            <p className="idrak-card-label">احجز موعداً مع أحد متخصصينا في اضطرابات التعلم</p>
-          </div>
-        </div>
-
-        {/* ── 6. CTA buttons ── */}
-        <div className="idrak-cta-row">
-          <button className="idrak-cta-btn" onClick={() => document.getElementById('idrak-form').scrollIntoView({ behavior: 'smooth' })}>
-            ادخل إلى حسابي
-          </button>
-          <button className="idrak-cta-btn" onClick={() => navigate('/appointment')}>احجز موعـداً</button>
-        </div>
-
-        {/* ── 7. Welcome heading ── */}
-        <div className="idrak-welcome-row">
-          <div className="idrak-wline idrak-wline-l" />
-          <h2 className="idrak-welcome-txt">مرحباً بك في إدراكية</h2>
-          <div className="idrak-wline idrak-wline-r" />
         </div>
 
         {/* ── 8. Auth form ── */}

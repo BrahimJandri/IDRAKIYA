@@ -81,7 +81,7 @@ export default function AboutUs() {
 
         {/* ── NAV ── */}
         <nav className="idrak-nav">
-          <button className="idrak-contact-btn">تواصل معنا</button>
+          <a href="https://linktr.ee/idrakiya" target="_blank" rel="noreferrer" className="idrak-contact-btn">تواصل معنا</a>
           <div className="idrak-nav-links">
             <a href="/" className="idrak-nl">الرئيسية</a>
             <a href="/courses" className="idrak-nl">الـدورات</a>
@@ -144,8 +144,6 @@ export default function AboutUs() {
           <div className="idrak-footer-top">
             <div className="idrak-footer-brand">
               <img src="/logo.png" alt="" className="idrak-footer-brand-icon" />
-              <span className="idrak-footer-brand-ar">إدراكيـة®</span>
-              <span className="idrak-footer-brand-en">IDRAKIYA</span>
               <p className="idrak-footer-brand-desc">
                 منصة متخصصة في اضطرابات التعلم<br />
                 المغرب والعالم العربي<br />
@@ -155,40 +153,23 @@ export default function AboutUs() {
 
             <div className="idrak-footer-contact">
               <h3 className="idrak-footer-contact-title">تواصل معنا:</h3>
-              <div className="idrak-footer-row">
+              <a href="https://wa.me/212723327524" target="_blank" rel="noreferrer" className="idrak-footer-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <span className="idrak-footer-icon-circle"><Icon.whatsapp className="idrak-footer-icon" /></span>
-                <span>XXXXXXXXXX</span>
-              </div>
+                <span>+212 723327524</span>
+              </a>
               <div className="idrak-footer-row">
                 <span className="idrak-footer-icon-circle"><Icon.email className="idrak-footer-icon" /></span>
-                <span>info@idrakiya.ma</span>
+                <span>Contact@idrakiya.com</span>
               </div>
               <div className="idrak-footer-social">
-                <a href="#" className="idrak-footer-social-icon" aria-label="Facebook"><Icon.facebook /></a>
-                <a href="#" className="idrak-footer-social-icon" aria-label="TikTok"><Icon.tiktok /></a>
-                <a href="#" className="idrak-footer-social-icon" aria-label="Instagram"><Icon.instagram /></a>
-                <a href="#" className="idrak-footer-social-icon" aria-label="YouTube"><Icon.youtube /></a>
+                <a href="https://www.facebook.com/idrakiya/" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="Facebook"><Icon.facebook /></a>
+                <a href="https://www.tiktok.com/@idrakiya" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="TikTok"><Icon.tiktok /></a>
+                <a href="https://www.instagram.com/idrakiya" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="Instagram"><Icon.instagram /></a>
+                <a href="https://www.youtube.com/@idrakiya0" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="YouTube"><Icon.youtube /></a>
               </div>
             </div>
           </div>
 
-          <nav className="idrak-footer-nav">
-            <button className="idrak-footer-nav-btn" aria-label="تواصل معنا">
-              <img src="/customer-service.png" alt="" className="idrak-footer-nav-icon" />
-            </button>
-            <button className="idrak-footer-nav-btn" aria-label="مساعدة">
-              <Icon.question className="idrak-footer-nav-icon" />
-            </button>
-            <button className="idrak-footer-nav-btn" aria-label="الرئيسية" onClick={() => navigate('/')}>
-              <img src="/home-icon.png" alt="" className="idrak-footer-nav-icon" />
-            </button>
-            <button className="idrak-footer-nav-btn" aria-label="احجز موعداً" onClick={() => navigate('/appointment')}>
-              <img src="/booking-icon.png" alt="" className="idrak-footer-nav-icon" />
-            </button>
-            <button className="idrak-footer-nav-btn" aria-label="الدورات" onClick={() => navigate('/courses')}>
-              <img src="/graduate-icon.png" alt="" className="idrak-footer-nav-icon" />
-            </button>
-          </nav>
         </footer>
 
       </div>

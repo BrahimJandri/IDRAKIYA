@@ -93,7 +93,7 @@ export default function BookAppointment() {
 
         {/* ── NAV ── */}
         <nav className="idrak-nav">
-          <button className="idrak-contact-btn">تواصل معنا</button>
+          <a href="https://linktr.ee/idrakiya" target="_blank" rel="noreferrer" className="idrak-contact-btn">تواصل معنا</a>
           <div className="idrak-nav-links">
             <a href="/" className="idrak-nl">الرئيسية</a>
             <a href="/courses" className="idrak-nl">الـدورات</a>
