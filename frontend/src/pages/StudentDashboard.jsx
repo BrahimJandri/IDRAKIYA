@@ -33,7 +33,7 @@ function SectionHeader({ title, action }) {
 }
 
 export default function StudentDashboard() {
-  const { user, logout } = useAuth()
+  const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [tab, setTab] = useState('learning')
@@ -183,6 +183,15 @@ export default function StudentDashboard() {
               <span>{t(labelKey)}</span>
             </button>
           ))}
+          {isAdmin && (
+            <button
+              className="db-nav-item"
+              onClick={() => { navigate('/admin'); setSidebarOpen(false) }}
+            >
+              <span className="db-nav-icon">⚙️</span>
+              <span>إدارة</span>
+            </button>
+          )}
         </nav>
 
         <div className="db-sidebar-divider" />

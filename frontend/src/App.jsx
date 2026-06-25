@@ -50,6 +50,16 @@ export default function App() {
             {/* Courses landing (IDRAKIYA themed, no app navbar) — public, hidden once logged in */}
             <Route path="/courses" element={<GuestRoute redirectTo="/dashboard"><CourseCatalog /></GuestRoute>} />
 
+            {/* Dashboard — no app Navbar, dashboard has its own top bar */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Main app — all routes with Navbar */}
             <Route
               path="/*"
@@ -59,14 +69,7 @@ export default function App() {
                   <Routes>
                     <Route path="/courses/all" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/courses/:id" element={<CourseDetail />} />
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <StudentDashboard />
-                        </ProtectedRoute>
-                      }
-                    />
+                    <Route path="/dashboard" element={<Navigate to="/dashboard" replace />} />
                     <Route
                       path="/instructor"
                       element={

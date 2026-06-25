@@ -4651,6 +4651,12 @@ select.input { cursor: pointer; }
   flex-wrap: wrap;
 }
 
+.db-banner-text {
+  width: 100%;
+  text-align: right;
+  direction: rtl;
+}
+
 .db-banner-greeting {
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -4658,6 +4664,8 @@ select.input { cursor: pointer; }
   color: #fff;
   letter-spacing: -.02em;
   margin-bottom: .25rem;
+  direction: rtl;
+  text-align: right;
 }
 
 .db-banner-greeting strong { color: var(--mint); }
@@ -4665,6 +4673,8 @@ select.input { cursor: pointer; }
 .db-banner-sub {
   font-size: .875rem;
   color: rgba(255,255,255,.45);
+  direction: rtl;
+  text-align: right;
 }
 
 .db-banner-stats {
