@@ -89,7 +89,7 @@ class ChapterOutFull(ChapterOut):
 
 class CourseCreate(BaseModel):
     title: str = Field(min_length=3, max_length=255)
-    slug: str = Field(min_length=3, max_length=255)
+    slug: Optional[str] = Field(default=None, max_length=255)
     description: Optional[str] = None
     thumbnail_url: Optional[str] = None
     preview_video_url: Optional[str] = None

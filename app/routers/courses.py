@@ -28,6 +28,13 @@ from app.schemas.course import (
     LessonUpdate,
 )
 
+# ChapterUpdate schema (inline — no separate file needed)
+from pydantic import BaseModel as _BM
+class ChapterUpdate(_BM):
+    title: Optional[str] = None
+    order: Optional[int] = None
+    is_free_preview: Optional[bool] = None
+
 router = APIRouter(prefix="/courses", tags=["Courses"])
 
 
@@ -91,11 +98,17 @@ async def create_course(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_instructor),
 ):
-    existing = await db.execute(select(Course).where(Course.slug == payload.slug))
-    if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Slug already in use")
+    import uuid as _uuid
+    # Auto-generate slug from title or use a UUID fallback
+    base_slug = payload.slug or _slug_from(payload.title) or str(_uuid.uuid4())[:8]
+    slug = base_slug
+    suffix = 1
+    while (await db.execute(select(Course).where(Course.slug == slug))).scalar_one_or_none():
+        slug = f"{base_slug}-{suffix}"
+        suffix += 1
 
-    course = Course(**payload.model_dump(), instructor_id=current_user.id)
+    data = payload.model_dump(exclude={"slug"})
+    course = Course(**data, slug=slug, instructor_id=current_user.id)
     db.add(course)
     await db.flush()
     await db.refresh(course, ["category"])
@@ -192,6 +205,44 @@ async def add_chapter(
     return chapter
 
 
+@router.patch("/{course_id}/chapters/{chapter_id}", response_model=ChapterOut)
+async def update_chapter(
+    course_id: UUID,
+    chapter_id: UUID,
+    payload: ChapterUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_instructor),
+):
+    ch = (await db.execute(select(Chapter).where(Chapter.id == chapter_id, Chapter.course_id == course_id))).scalar_one_or_none()
+    if not ch:
+        raise HTTPException(status_code=404, detail="Chapter not found")
+    course = (await db.execute(select(Course).where(Course.id == course_id))).scalar_one()
+    if course.instructor_id != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not your course")
+    for field, value in payload.model_dump(exclude_none=True).items():
+        setattr(ch, field, value)
+    await db.flush()
+    await db.refresh(ch, ["lessons"])
+    return ch
+
+
+@router.delete("/{course_id}/chapters/{chapter_id}", status_code=204)
+async def delete_chapter(
+    course_id: UUID,
+    chapter_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_instructor),
+):
+    ch = (await db.execute(select(Chapter).where(Chapter.id == chapter_id, Chapter.course_id == course_id))).scalar_one_or_none()
+    if not ch:
+        raise HTTPException(status_code=404, detail="Chapter not found")
+    course = (await db.execute(select(Course).where(Course.id == course_id))).scalar_one()
+    if course.instructor_id != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not your course")
+    await db.delete(ch)
+    await db.commit()
+
+
 # ── Lessons ───────────────────────────────────────────────────────────────────
 
 @router.post("/{course_id}/chapters/{chapter_id}/lessons", response_model=LessonOut, status_code=201)
@@ -246,24 +297,41 @@ async def get_lesson(
     course_result = await db.execute(select(Course).where(Course.id == course_id))
     course: Course = course_result.scalar_one()
 
-    # Free preview or instructor/admin → full access
-    is_privileged = current_user and current_user.role in ("admin", "instructor")
-    is_owner = current_user and current_user.id == course.instructor_id
-
-    if lesson.is_preview or is_privileged or is_owner:
-        return LessonOutFull.model_validate(lesson)
-
-    # Check enrollment
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Authentication required")
-
-    enroll_result = await db.execute(
-        select(Enrollment).where(
-            Enrollment.student_id == current_user.id,
-            Enrollment.course_id == course_id,
-        )
-    )
-    if not enroll_result.scalar_one_or_none():
-        raise HTTPException(status_code=403, detail="Not enrolled in this course")
-
+    # All lessons are freely accessible
     return LessonOutFull.model_validate(lesson)
+
+
+@router.patch("/{course_id}/chapters/{chapter_id}/lessons/{lesson_id}", response_model=LessonOut)
+async def update_lesson(
+    course_id: UUID, chapter_id: UUID, lesson_id: UUID,
+    payload: LessonUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_instructor),
+):
+    lesson = (await db.execute(select(Lesson).where(Lesson.id == lesson_id, Lesson.chapter_id == chapter_id))).scalar_one_or_none()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    course = (await db.execute(select(Course).where(Course.id == course_id))).scalar_one()
+    if course.instructor_id != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not your course")
+    for field, value in payload.model_dump(exclude_none=True).items():
+        setattr(lesson, field, value)
+    await db.flush()
+    return lesson
+
+
+@router.delete("/{course_id}/chapters/{chapter_id}/lessons/{lesson_id}", status_code=204)
+async def delete_lesson(
+    course_id: UUID, chapter_id: UUID, lesson_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_instructor),
+):
+    lesson = (await db.execute(select(Lesson).where(Lesson.id == lesson_id, Lesson.chapter_id == chapter_id))).scalar_one_or_none()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    course = (await db.execute(select(Course).where(Course.id == course_id))).scalar_one()
+    if course.instructor_id != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not your course")
+    await db.delete(lesson)
+    await db.execute(Course.__table__.update().where(Course.id == course_id).values(total_lessons=Course.total_lessons - 1))
+    await db.commit()

@@ -93,7 +93,6 @@ export default function CourseDetail() {
   }
 
   const openLesson = async (lesson, chapterId) => {
-    if (!enrollment && !lesson.is_preview) { setError(t('course.enrollToAccess')); return }
     setError(''); setActiveLesson({ ...lesson, chapterId })
     try {
       const { data } = await getLesson(id, chapterId, lesson.id)
@@ -221,13 +220,6 @@ export default function CourseDetail() {
           {error && (
             <div className="alert alert-error" style={{ margin: '1rem' }}>{error}</div>
           )}
-          {!enrollment && (
-            <div style={{ padding: '1rem' }}>
-              <button className="btn btn-primary btn-lg" onClick={handleEnroll} disabled={enrolling}>
-                {enrolling ? t('course.enrolling') : t('course.enrollFree')}
-              </button>
-            </div>
-          )}
         </div>
 
         {/* ── Right: sidebar ──────────────────────── */}
@@ -255,16 +247,15 @@ export default function CourseDetail() {
                       </p>
                     )}
                     {chapter.lessons?.map((lesson) => {
-                      const canView = lesson.is_preview || chapter.is_free_preview || !!enrollment
                       const isPlaying = activeLesson?.id === lesson.id
                       return (
                         <div
                           key={lesson.id}
-                          className={`ud-ls${isPlaying ? ' ud-ls-active' : ''}${!canView ? ' ud-ls-locked' : ''}`}
+                          className={`ud-ls${isPlaying ? ' ud-ls-active' : ''}`}
                           onClick={() => openLesson(lesson, chapter.id)}
                         >
                           <span className="ud-ls-icon">
-                            {isPlaying ? '▶' : !canView ? '🔒' : '○'}
+                            {isPlaying ? '▶' : '○'}
                           </span>
                           <div className="ud-ls-info">
                             <span className="ud-ls-title">{lesson.title}</span>
