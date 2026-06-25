@@ -211,13 +211,24 @@ export default function InstructorPanel() {
                     <span>{Number(course.price)===0 ? `🆓 ${t('common.free')}` : `💰 $${Number(course.price).toFixed(2)}`}</span>
                   </div>
 
+                  {/* Publish toggle */}
+                  <div style={{ display:'flex', alignItems:'center', gap:'.75rem', marginBottom:'.75rem', padding:'.625rem .75rem', background:'var(--surface-2,rgba(255,255,255,.04))', borderRadius:'10px' }}>
+                    <span style={{ fontSize:'.8125rem', fontWeight:600, color:'var(--text-2)', flex:1 }}>
+                      {course.is_published ? '🟢 منشور' : '⚪ مسودة'}
+                    </span>
+                    <button
+                      className={`btn btn-sm ${course.is_published ? 'btn-danger' : 'btn-primary'}`}
+                      onClick={() => togglePublish(course)}
+                      style={{ minWidth:'90px' }}
+                    >
+                      {course.is_published ? t('instructor.unpublish') : '🚀 ' + t('instructor.publish')}
+                    </button>
+                  </div>
+
                   <div style={{ display:'flex', gap:'.375rem', flexWrap:'wrap' }}>
                     <button className="btn btn-secondary btn-sm"
                       onClick={() => { setCourseForm({ ...course, price:String(course.price), category_id:course.category?.id||'' }); setCourseModal(course) }}>
                       {t('instructor.edit')}
-                    </button>
-                    <button className="btn btn-secondary btn-sm" onClick={() => togglePublish(course)}>
-                      {course.is_published ? t('instructor.unpublish') : t('instructor.publish')}
                     </button>
                     <button className="btn btn-ghost btn-sm"
                       onClick={() => { setChapterModal({ courseId:course.id }); setChapterForm(BLANK_CHAPTER) }}>

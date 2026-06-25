@@ -53,9 +53,9 @@ class Course(Base):
     instructor = relationship("User", back_populates="courses_taught")
     category = relationship("Category", back_populates="courses")
     chapters = relationship("Chapter", back_populates="course", cascade="all, delete-orphan", order_by="Chapter.order")
-    enrollments = relationship("Enrollment", back_populates="course")
-    payments = relationship("Payment", back_populates="course")
-    reviews = relationship("Review", back_populates="course")
+    enrollments = relationship("Enrollment", back_populates="course", cascade="all, delete-orphan", passive_deletes=True)
+    payments = relationship("Payment", back_populates="course", passive_deletes=True)
+    reviews = relationship("Review", back_populates="course", passive_deletes=True)
 
 
 class Chapter(Base):

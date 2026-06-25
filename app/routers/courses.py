@@ -167,6 +167,7 @@ async def delete_course(
     if course.instructor_id != current_user.id and current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not your course")
     await db.delete(course)
+    await db.commit()
 
 
 # ── Chapters ──────────────────────────────────────────────────────────────────
