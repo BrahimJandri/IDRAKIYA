@@ -277,32 +277,11 @@ function CourseEditor({ course: initial, categories, onSave, onBack }) {
           <textarea className="input" rows={3} value={form.description} onChange={cf('description')} placeholder="وصف مختصر للدورة…" />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.25rem' }}>التصنيف</label>
-            <select className="input" value={form.category_id} onChange={cf('category_id')}>
-              <option value="">— بدون تصنيف —</option>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.25rem' }}>المستوى</label>
-            <select className="input" value={form.level} onChange={cf('level')}>
-              <option value="beginner">مبتدئ</option>
-              <option value="intermediate">متوسط</option>
-              <option value="advanced">متقدم</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', justifyContent: 'flex-end' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer', fontSize: '.875rem', color: 'var(--text-2)' }}>
-              <input type="checkbox" checked={form.is_free} onChange={cf('is_free')} style={{ accentColor: 'var(--mint)' }} />
-              دورة مجانية
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer', fontSize: '.875rem', color: 'var(--text-2)' }}>
-              <input type="checkbox" checked={form.watermark_enabled} onChange={cf('watermark_enabled')} style={{ accentColor: 'var(--mint)' }} />
-              حماية الفيديو (علامة مائية)
-            </label>
-          </div>
+        <div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer', fontSize: '.875rem', color: 'var(--text-2)' }}>
+            <input type="checkbox" checked={form.watermark_enabled} onChange={cf('watermark_enabled')} style={{ accentColor: 'var(--mint)' }} />
+            حماية الفيديو (علامة مائية)
+          </label>
         </div>
       </div>
 
