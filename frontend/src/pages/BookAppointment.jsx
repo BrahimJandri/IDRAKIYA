@@ -56,8 +56,8 @@ const SPECIALIST = {
   name: 'الأستاذ محمد ابن المهدي',
   rows: [
     { icon: 'user',      text: 'الأستاذ محمد ابن المهدي' },
-    { icon: 'briefcase', text: 'متخصص في اضطرابات التعلم' },
-    { icon: 'student',   text: 'خريج برنامج يسر الوزاري' },
+    { icon: 'briefcase', text: 'متخصص في مجال اضطرابات التعلم الخاصة ' },
+    { icon: 'student',   text: 'خريج برنامج يسر ' },
     { icon: 'signal',    text: 'جلسات فردية عن بعد' },
     { icon: 'clock',     text: '60 دقيقة' },
   ],

@@ -3624,7 +3624,7 @@ select.input { cursor: pointer; }
   text-align: center;
   direction: rtl;
 }
-.idrak-about-card-1 .idrak-about-text { color: #2CC194; }
+.idrak-about-card-1 .idrak-about-text { color: #fff; }
 .idrak-about-text-em { color: #2CC194; }
 
 /* ── FOOTER ── Figma: bg-gradient left=#014636 right=#002119, height≈484 ── */
@@ -3698,10 +3698,16 @@ select.input { cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  direction: ltr;
+  direction: rtl;
   font-family: 'VEXA', sans-serif;
   font-size: 0.82rem;
   color: #fff;
+}
+/* Ensure phone numbers render left-to-right (English digit order) */
+a.idrak-footer-row[href^="https://wa.me"] > span:last-child {
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: left;
 }
 /* Contact icon circles: Figma Ellipse 38×38 → 22px web */
 .idrak-footer-icon-circle {

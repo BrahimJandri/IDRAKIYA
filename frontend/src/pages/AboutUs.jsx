@@ -37,6 +37,26 @@ const Icon = {
       <path d="M22 7.2c0-1.5-1.1-2.7-2.6-2.9C17.3 4 12 4 12 4s-5.3 0-7.4.3C3.1 4.5 2 5.7 2 7.2 1.8 8.8 1.8 12 1.8 12s0 3.2.2 4.8c.1 1.5 1.1 2.7 2.6 2.9C6.7 20 12 20 12 20s5.3 0 7.4-.3c1.5-.2 2.5-1.4 2.6-2.9.2-1.6.2-4.8.2-4.8s0-3.2-.2-4.8ZM10 15.5v-7l6 3.5-6 3.5Z" />
     </svg>
   ),
+  x: (p) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...p}>
+      <path d="M5.5 5.5l13 13M18.5 5.5l-13 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  threads: (p) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...p}>
+      <path d="M12 2a7 7 0 0 0-7 7c0 4 4 7.5 7 11 3-3.5 7-7 7-11a7 7 0 0 0-7-7zm0 3a4 4 0 0 1 4 4c0 2.5-2 5-4 7-2-2-4-4.5-4-7a4 4 0 0 1 4-4z" />
+    </svg>
+  ),
+  snapchat: (p) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...p}>
+      <path d="M12 2C8 2 5 5 5 9c0 4 2 6 7 6s7-2 7-6c0-4-3-7-7-7zm0 16c-3 0-5 2-5 2v1h10v-1s-2-2-5-2z" />
+    </svg>
+  ),
+  linkedin: (p) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...p}>
+      <path d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0-.02-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-.9 1.8-1.8 3.7-1.8 4 0 4.8 2.6 4.8 6v7h-4v-6.2c0-1.5 0-3.4-2-3.4-2 0-2.3 1.6-2.3 3.3V21H9z" />
+    </svg>
+  ),
   customerService: (p) => (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...p}>
       <path d="M12 3a9 9 0 0 0-9 9v5a3 3 0 0 0 3 3h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H6v-2a6 6 0 0 1 12 0v2h-1a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h1a3 3 0 0 0 3-3v-5a9 9 0 0 0-9-9Z" />
@@ -113,8 +133,8 @@ export default function AboutUs() {
               <span className="idrak-about-brand-tagline">THE JOURNEY BEGINS WITH UNDERSTANDING</span>
             </div>
             <p className="idrak-about-text">
-              <span className="idrak-about-text-em">إدراكية</span> منصة تعليمية متخصصة في اضطرابات التعلم،
-              أُسست لمرافقة الأطفال وأسرهم والمعلمين في رحلة الفهم والدعم.
+              <span className="idrak-about-text-em">إدراكية</span> منصة تعليمية متخصصة في مجال اضطرابات التعلم الخاصة والنمائية, 
+          أسست لمرافقة الأطفال وأسرهم والمدرسين والمربين في رحلة الفهم والدعم والمرافقة.
             </p>
           </section>
         </div>
@@ -133,7 +153,7 @@ export default function AboutUs() {
               </div>
             </div>
             <p className="idrak-about-text">
-              نؤمن بأن المشكلة ليست في الطفل — بل في غياب الفهم والأدوات المناسبة لمن حوله.
+              نؤمن بأن المشكلة ليست في الطفل — بل في غياب الفهم والأدوات المناسبة  .
               لذلك نعمل على بناء الوعي وتطوير الكفاءات، لأن كل طفل يستحق من يفهمه.
             </p>
           </section>
@@ -145,8 +165,8 @@ export default function AboutUs() {
             <div className="idrak-footer-brand">
               <img src="/logo.png" alt="" className="idrak-footer-brand-icon" />
               <p className="idrak-footer-brand-desc">
-                منصة متخصصة في اضطرابات التعلم<br />
-                المغرب والعالم العربي<br />
+                منصة متخصصة في اضطرابات التعلم الخاصة<br />
+                المغرب والعالم العربي
                 مـن الإدراك تبـدأ الرحـلة
               </p>
             </div>
@@ -166,6 +186,11 @@ export default function AboutUs() {
                 <a href="https://www.tiktok.com/@idrakiya" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="TikTok"><Icon.tiktok /></a>
                 <a href="https://www.instagram.com/idrakiya" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="Instagram"><Icon.instagram /></a>
                 <a href="https://www.youtube.com/@idrakiya0" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="YouTube"><Icon.youtube /></a>
+                <a href="https://x.com/idrakiya" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="X"><Icon.x /></a>
+                <a href="https://www.threads.com/@idrakiya" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="Threads"><Icon.threads /></a>
+                <a href="https://www.snapchat.com/@idrakiya" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="Snapchat"><Icon.snapchat /></a>
+                <a href="https://www.linkedin.com/company/idrakiya/" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="LinkedIn"><Icon.linkedin /></a>
+                <a href="https://api.whatsapp.com/send?phone=212723327524" target="_blank" rel="noreferrer" className="idrak-footer-social-icon" aria-label="WhatsApp"><Icon.whatsapp /></a>
               </div>
             </div>
           </div>
