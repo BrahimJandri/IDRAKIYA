@@ -133,8 +133,8 @@ export default function AboutUs() {
               <span className="idrak-about-brand-tagline">THE JOURNEY BEGINS WITH UNDERSTANDING</span>
             </div>
             <p className="idrak-about-text">
-              <span className="idrak-about-text-em">إدراكية</span> منصة تعليمية متخصصة في مجال اضطرابات التعلم الخاصة والنمائية, 
-          أسست لمرافقة الأطفال وأسرهم والمدرسين والمربين في رحلة الفهم والدعم والمرافقة.
+              <span className="idrak-about-text-em">إدراكية</span> منصة تعليمية متخصصة في مجال اضطرابات التعلم الخاصة والنمائية,
+              أسست لمرافقة الأطفال وأسرهم والمدرسين والمربين في رحلة الفهم والدعم والمرافقة.
             </p>
           </section>
         </div>

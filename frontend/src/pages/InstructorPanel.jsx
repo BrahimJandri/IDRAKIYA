@@ -41,6 +41,9 @@ function LessonRow({ lesson, courseId, chapterId, onUpdate, onDelete }) {
       setVideoUrl(data.url)
       const { data: updated } = await updateLesson(courseId, chapterId, lesson.id, { video_url: data.url })
       onUpdate(updated)
+    } catch (error) {
+      const message = error?.response?.data?.detail || error?.message || 'فشل رفع الفيديو'
+      alert(message)
     } finally { setUploadPct(null) }
   }
 

@@ -24,13 +24,8 @@ async def upload_video(
     # is easily spoofed/unreliable and not checked)
     ext = Path(file.filename).suffix.lower() if file.filename else ""
     if ext not in ALLOWED_VIDEO_EXTENSIONS:
-        raise HTTPException(status_code=400, detail=f"Unsupported file type. Allowed: {', '.join(ALLOWED_VIDEO_EXTENSIONS)}")
-
-    # Check size (stream first chunk to validate before reading all)
-    max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
-    contents = await file.read(max_bytes + 1)
-    if len(contents) > max_bytes:
-        raise HTTPException(status_code=413, detail=f"File too large. Max {settings.MAX_UPLOAD_SIZE_MB}MB")
+        raise HTTPException(
+            status_code=400, detail=f"Unsupported file type. Allowed: {', '.join(ALLOWED_VIDEO_EXTENSIONS)}")
 
     # Save to media/videos/
     videos_dir = Path(settings.UPLOAD_DIR) / "videos"
@@ -38,6 +33,21 @@ async def upload_video(
 
     filename = f"{uuid.uuid4()}{ext}"
     dest = videos_dir / filename
-    dest.write_bytes(contents)
+
+    written = 0
+    chunk_size = 1024 * 1024
+
+    try:
+        with dest.open("wb") as target:
+            while True:
+                chunk = await file.read(chunk_size)
+                if not chunk:
+                    break
+                written += len(chunk)
+                target.write(chunk)
+    except HTTPException:
+        if dest.exists():
+            dest.unlink()
+        raise
 
     return JSONResponse({"url": f"/media/videos/{filename}", "filename": filename})
